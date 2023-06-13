@@ -36,7 +36,7 @@ test_model_creation = TestModelCreation.as_view()
 PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
             2. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
-            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If you can't find a definite location, write "None".
+            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             4. Choose ONLY from the following list of words: ['Part-Time Job', 'Full-Time Job', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']. Give me a comma-separated sublist of the given list that is relevant to the description provided.
             Format the result as a JSON string like this:
             {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, state, country","relevant_words":"word1,word2,word3"}

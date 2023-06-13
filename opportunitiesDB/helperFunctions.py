@@ -13,19 +13,18 @@ def tagToStr(tag): #recursive function that converts tag and its contents to str
         
 def findOppTypeTags(descriptionLower):
     #Wix tag formatting - ["tag1","tag2"]
-    result = '['
+    result = []
     for type in typeOfOpportunity:
         if descriptionLower.find(type) >= 0:
             if type in partTime:
-                result += f'"{tagLists.PART_TIME_JOB}",'
+                result.append(tagLists.PART_TIME_JOB)
             elif type in fullTime:
-                result += f'"{tagLists.FULL_TIME_JOB}",'
+                result.append(tagLists.FULL_TIME_JOB)
             elif type == 'call for scores' or type == 'competition':
-                result += 'Contest'
+                result.append('Contest')
             else:
-                result += f'"{string.capwords(type)}",'
-    if result == '[':
-        result = '["Other"]'
-    else:
-        result = result[:-1] + ']'
+                result.append(string.capwords(type))
+    if len(result) == 0:
+        result.append('Other')
+        
     return result

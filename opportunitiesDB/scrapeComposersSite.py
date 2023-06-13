@@ -90,14 +90,17 @@ def scrape(prompt):
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['summary'] != 'None':
                     description = json_result['summary']
-                keywordsList = json_result['keywords'].split(', ')
+                if json_result['keywords'].find(', ') != -1:
+                    keywordsList = json_result['keywords'].split(', ')
+                else:
+                    keywordsList = json_result['keywords'].split(',')
                 composerKeywords = ['composer', 'composition', 'new music']
                 keywordsList.extend(composerKeywords)
                 
                 # CREATE A ACTIVEOPPS Model instance and save it to the database
                 newModel = ActiveOpps(title=title, deadline=deadline,
                             location=location, description=description, link=website, 
-                            typeOfOpp=oppTypeList, approved=False, keywords=keywordsList)
+                            typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
                 newModel.save()
             except:
                 print('An entry failed to be added.')
