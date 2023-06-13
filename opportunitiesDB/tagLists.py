@@ -1,4 +1,4 @@
-typeOfOpportunity = ['part-time job', 'part time','parttime','full time', 'full-time', 'fulltime', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']
+typeOfOpportunity = ['part-time job', 'part time','parttime','full time', 'full-time', 'fulltime', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship', 'call for scores', 'competition']
 partTime = {'part-time job', 'part time','parttime'}
 fullTime = {'full-time', 'fulltime', 'full time'}
 typeOfOpportunityOptions = ['Part-Time Job', 'Other', 'Scholarship', 'Grant', 'Workshop', 'Residency', 'Contest', 'Full-Time Job', 'Paid Internship', 'Unpaid Internship']

@@ -5,6 +5,7 @@ class ActiveOppsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActiveOpps
         fields = [
+            'id',
             'title',
             'deadline',
             'location',

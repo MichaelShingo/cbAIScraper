@@ -1,3 +1,7 @@
+from .tagLists import typeOfOpportunity, partTime, fullTime
+from . import tagLists
+import string
+
 def tagToStr(tag): #recursive function that converts tag and its contents to string, including all nested tags
     if isinstance(tag, str):
         return tag
@@ -6,3 +10,22 @@ def tagToStr(tag): #recursive function that converts tag and its contents to str
             return tagToStr(tag.contents[0])
         else:
             return ''
+        
+def findOppTypeTags(descriptionLower):
+    #Wix tag formatting - ["tag1","tag2"]
+    result = '['
+    for type in typeOfOpportunity:
+        if descriptionLower.find(type) >= 0:
+            if type in partTime:
+                result += f'"{tagLists.PART_TIME_JOB}",'
+            elif type in fullTime:
+                result += f'"{tagLists.FULL_TIME_JOB}",'
+            elif type == 'call for scores' or type == 'competition':
+                result += 'Contest'
+            else:
+                result += f'"{string.capwords(type)}",'
+    if result == '[':
+        result = '["Other"]'
+    else:
+        result = result[:-1] + ']'
+    return result

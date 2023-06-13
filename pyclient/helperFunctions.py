@@ -2,7 +2,6 @@ from locationSets import countriesSet, citiesSet, statesSet, countryToCity
 import tagLists
 from tagLists import typeOfOpportunity, keywords, partTime, fullTime
 import string
-from helperFunctions import tagToStr
 
 ONLINE = 'Online'
 
