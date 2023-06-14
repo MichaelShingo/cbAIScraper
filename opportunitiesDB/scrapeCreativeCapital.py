@@ -1,18 +1,16 @@
 # Web scraper for Creative Capital, saves data in CSV file formatted for upload to Wix
 #World cities list attribution - https://simplemaps.com/data/world-cities
 
-import csv
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json
 from .helperFunctions import findOppTypeTags
 from .models import ActiveOpps
 
-
 # ISSUES
     # How do you handle RateLimitError from ChatGPT? Wait and try again in a few minutes?
 
-def scrape(prompt):
+def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 2 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".

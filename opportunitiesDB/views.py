@@ -6,6 +6,9 @@ from .helperFunctions import tagToStr
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
+from . import scrapeAsianArts
+from . import scrapeHyperAllergic
+from . import scrapeArtworkArchive
 
 from . import scrapeComposersSite, scrapeCreativeCapital
 
@@ -33,15 +36,6 @@ class TestModelCreation(APIView):
 
 test_model_creation = TestModelCreation.as_view()
 
-PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
-            1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
-            2. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
-            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
-            4. Choose ONLY from the following list of words: ['Part-Time Job', 'Full-Time Job', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']. Give me a comma-separated sublist of the given list that is relevant to the description provided.
-            Format the result as a JSON string like this:
-            {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, state, country","relevant_words":"word1,word2,word3"}
-            '''
-
 class DeleteAPIView(APIView):
     def delete(self, request, pk):
         try:
@@ -57,7 +51,7 @@ delete_view = DeleteAPIView.as_view()
 
 class ComposerScrapeAPIView(APIView):
     def get(self, request):
-        message = scrapeComposersSite.scrape(PROMPT)
+        message = scrapeComposersSite.scrape()
         data = {'message': message,
                 'status': 'success'}
         
@@ -71,13 +65,43 @@ composer_scrape_view = ComposerScrapeAPIView.as_view()
 
 class CreativeCapitalScrapeAPIView(APIView):
     def get(self, request):
-        message = scrapeCreativeCapital.scrape(PROMPT)
+        message = scrapeCreativeCapital.scrape()
         data = {'message': message,
                 'status': 'success'}
         status_code = status.HTTP_202_ACCEPTED
         return Response(data, status=status_code)
     
 capital_scrape_view = CreativeCapitalScrapeAPIView.as_view()
+
+class AsianArtsScrapeAPIView(APIView):
+    def get(self, request):
+        message = scrapeAsianArts.scrape()
+        data = {'message': message,
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+        return Response(data, status=status_code)
+    
+asian_arts_scrape_view = AsianArtsScrapeAPIView.as_view()
+
+class ArtworkAllianceScrapeAPIView(APIView):
+    def get(self, request):
+        message = scrapeArtworkArchive.scrape()
+        data = {'message': message,
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+        return Response(data, status=status_code)
+    
+artwork_scrape_view = ArtworkAllianceScrapeAPIView.as_view()
+
+class HyperAllergicScrapeAPIView(APIView):
+    def get(self, request):
+        message = scrapeHyperAllergic.scrape()
+        data = {'message': message,
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+        return Response(data, status=status_code)
+    
+hyper_scrape_view = HyperAllergicScrapeAPIView.as_view()
 
 
 

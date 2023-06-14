@@ -1,9 +1,17 @@
-typeOfOpportunity = ['part-time job', 'part time','parttime','full time', 'full-time', 'fulltime', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship', 'call for scores', 'competition']
+typeOfOpportunity = ['part-time job', 'fellowship', 'part time','parttime','full time', 'full-time', 'fulltime', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship', 'call for scores', 'competition']
 partTime = {'part-time job', 'part time','parttime'}
 fullTime = {'full-time', 'fulltime', 'full time'}
 typeOfOpportunityOptions = ['Part-Time Job', 'Other', 'Scholarship', 'Grant', 'Workshop', 'Residency', 'Contest', 'Full-Time Job', 'Paid Internship', 'Unpaid Internship']
 PART_TIME_JOB = 'Part-Time Job'
 FULL_TIME_JOB = 'Full-Time Job'
+OTHER = 'Other'
+SCHOLARSHIP = 'Scholarship'
+GRANT = 'Grant'
+WORKSHOP = 'Workshop'
+RESIDENCY = 'Residency'
+CONTEST = 'Contest'
+PAID_INTERNSHIP = 'Paid Internship'
+UNPAID_INTERNSHIP = 'Unpaid Internship'
 
 keywords = ['composition', 'composer', 'compose', 'flutist', 'teacher', 'teaching', 'teach', 'flute', 'alto flute', 'bass flute', 'french horn',
          'clarinet', 'bass clarinet', 'english horn', 'cor anglais', 'cello', 'piano', 'violin', 'viola', 'drums', 'percussion', 'oboe', 'bassoon', 'guitar', 
