@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from django.contrib.auth.models import AnonymousUser
 from . import (scrapeAsianArts, 
                scrapeHyperAllergic, 
-               scrapeArtworkArchive, 
                scrapeComposersSite, 
                scrapeCreativeCapital)
+
 
 class ActiveOppsListCreateAPIView(APIView):
     def get(self, request):
@@ -102,17 +102,17 @@ class AsianArtsScrapeAPIView(APIView):
     
 asian_arts_scrape_view = AsianArtsScrapeAPIView.as_view()
 
-class ArtworkAllianceScrapeAPIView(APIView):
-    def get(self, request):
-        authentication_classes = [TokenAuthentication]
-        permission_classes = [IsAuthenticated]
-        message = scrapeArtworkArchive.scrape()
-        data = {'message': message,
-                'status': 'success'}
-        status_code = status.HTTP_202_ACCEPTED
-        return Response(data, status=status_code)
+# class ArtworkAllianceScrapeAPIView(APIView):
+#     def get(self, request):
+#         authentication_classes = [TokenAuthentication]
+#         permission_classes = [IsAuthenticated]
+#         message = scrapeArtworkArchive.scrape()
+#         data = {'message': message,
+#                 'status': 'success'}
+#         status_code = status.HTTP_202_ACCEPTED
+#         return Response(data, status=status_code)
     
-artwork_scrape_view = ArtworkAllianceScrapeAPIView.as_view()
+# artwork_scrape_view = ArtworkAllianceScrapeAPIView.as_view()
 
 class HyperAllergicScrapeAPIView(APIView):
     def get(self, request):

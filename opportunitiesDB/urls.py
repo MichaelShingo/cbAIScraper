@@ -9,6 +9,5 @@ urlpatterns = [
     path('scrapeComposer/', views.composer_scrape_view),
     path('scrapeCapital/', views.capital_scrape_view),
     path('scrapeAsian/', views.asian_arts_scrape_view),
-    path('scrapeArtwork/', views.artwork_scrape_view),
     path('scrapeHyper/', views.hyper_scrape_view)
 ]

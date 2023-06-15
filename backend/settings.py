@@ -90,28 +90,27 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': env('DB_NAME_CLOUD'), 
-#         'USER': env('DB_USER_CLOUD'),
-#         'PASSWORD': env('DB_PASSWORD_CLOUD'),
-#         'HOST': env('DB_HOST_CLOUD'), 
-#         'PORT': env('DB_PORT_CLOUD'),
-#     }
-# }
-
-# use .env file to store user and password
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('DB_NAME'), 
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'), 
-        'PORT': env('DB_PORT'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME_CLOUD'), 
+        'USER': env('DB_USER_CLOUD'),
+        'PASSWORD': env('DB_PASSWORD_CLOUD'),
+        'HOST': env('DB_HOST_CLOUD'), 
+        'PORT': env('DB_PORT_CLOUD'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': env('DB_NAME'), 
+#         'USER': env('DB_USER'),
+#         'PASSWORD': env('DB_PASSWORD'),
+#         'HOST': env('DB_HOST'), 
+#         'PORT': env('DB_PORT'),
+#     }
+# }
 
 
 
