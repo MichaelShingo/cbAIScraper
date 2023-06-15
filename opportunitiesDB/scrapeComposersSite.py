@@ -11,7 +11,7 @@ from .helperFunctions import tagToStr, findOppTypeTags
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
-            2. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
+            2. If the description mentions an application fee, write "Fee" for the description. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             4. Choose ONLY from the following list of words: ['Part-Time Job', 'Full-Time Job', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']. Give me a comma-separated sublist of the given list that is relevant to the description provided.
             Format the result as a JSON string like this:
@@ -40,18 +40,20 @@ def scrape():
     oppLinks = [row['href'] for row in opportunityRows]
     maxPage = soup.select('.pager-last a')[0].attrs['href'][-1]
 
+    failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
+
     for i in range(int(maxPage) + 1): #loops through all pages
-        if i == 1: # REMOVE THIS IN FINAL VERSION
-            break
+        # if i == 1: # REMOVE THIS IN FINAL VERSION
+        #     break
         pageR = requests.get(PAGE_LINK + str(i))
         soup = BeautifulSoup(pageR.content, 'html.parser')
         opportunityRows = soup.select('.views-row .field-content a')
         oppLinks = [row['href'] for row in opportunityRows]
-        k = 0 # FOR TESTING ONLY
+        # k = 0 # FOR TESTING ONLY
         for oppLink in oppLinks: #loops through all opportunities on each page
-            k += 1 # FOR TESTING ONLY
-            if k == 3: # FOR TESTING ONLY
-                break
+            # k += 1 # FOR TESTING ONLY
+            # if k == 3: # FOR TESTING ONLY
+                # break
             oppR = requests.get(OPP_LINK + oppLink)
             oppSoup = BeautifulSoup(oppR.content, 'html.parser')
             title = oppSoup.select('.views-field-title .field-content')[0].contents[0] if oppSoup.select('.views-field-title .field-content') else NONE
@@ -75,6 +77,7 @@ def scrape():
             
             # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
             if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+                sameEntryCount += 1
                 print(f'title {title} already exists in database')
                 continue
 
@@ -86,8 +89,6 @@ def scrape():
                 ]
             )
 
-            message = 'Successfully created all new entries.'
-
             try:
                 completion_text = json.loads(str(response.choices[0])) # returns DICT
                 content = completion_text['message']['content']
@@ -96,8 +97,13 @@ def scrape():
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
                 # oppTypeList = (json_result['relevant_words']).split(', ') # GPT does not do well with finding oppTypes
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
-                if json_result['summary'] != 'None':
+                
+                if json_result['summary'] == 'Fee':
+                    fee += 1
+                    continue
+                elif json_result['summary'] != 'None':
                     description = json_result['summary']
+                    
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')
                 else:
@@ -110,9 +116,17 @@ def scrape():
                             location=location, description=description, link=website, 
                             typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
                 newModel.save()
+                successCount += 1
             except:
+                failCount += 1
                 print('An entry failed to be added.')
-                message = 'At least 1 entry failed to be added.'
                 continue
 
+    message = {
+        'website': 'Composers Site',
+        'failed': str(failCount),
+        'successful': str(successCount),
+        'duplicates': str(sameEntryCount),
+        'fee': str(fee)
+    }
     return message

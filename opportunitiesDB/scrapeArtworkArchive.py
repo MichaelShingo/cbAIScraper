@@ -49,7 +49,9 @@ def scrape():
     csvfile = open('artworkarchive.csv', 'w', newline='', encoding='utf-8')
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['title', 'dueDate', 'location', 'notes', 'link', 'typeOfOpportunity', 'approved', 'keywords'])
-
+    failCount = 0
+    successCount = 0
+    sameEntryCount = 0
     for i in range(int(maxPage) + 1): #loops through all pages
         pageR = requests.get(PAGE_LINK + str(i))
         soup = BeautifulSoup(pageR.content, 'html.parser')

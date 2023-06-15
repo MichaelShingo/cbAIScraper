@@ -11,20 +11,13 @@ from .models import ActiveOpps
     # How do you handle RateLimitError from ChatGPT? Wait and try again in a few minutes?
 
 def scrape():
-    PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 2 things? 
+    PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 3 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
+            2. If the description mentions an application fee, write "Fee" for the description.
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             Format the result as a JSON string like this:
-            {"keywords":"keyword1,keyword2,keyword3","location":"city, state, country"}
+            {"keywords":"keyword1,keyword2,keyword3","description":"description_text","location":"city, state, country"}
             '''
-    NONE = 'None'
-    APPROVED = 'FALSE'
-
-    title = ''
-    deadline = '' #if none provided, use NONE
-    location = '' #if none found, use ONLINE
-    description = ''
-    website = ''
 
     # OPEN AI SETUP
     env = environ.Env()
@@ -54,22 +47,16 @@ def scrape():
 
     soup = BeautifulSoup(r.content, 'html.parser')
     oppContainer = soup.select('.wyg-inner > *') # > p
-
-    # print(oppContainer)
-    # csvfile = open('creativeCapital.csv', 'w', newline='', encoding='utf-8')
-    # writer = csv.writer(csvfile, delimiter=',')
-    # writer.writerow(['title', 'dueDate', 'location', 'notes', 'link', 'typeOfOpportunity', 'approved', 'keywords'])
-    print('setup complete, scraping starting....')
-    message = ''
+    failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
     i = 0
-    while i < 80:#len(oppContainer) - 2:
+    while i < len(oppContainer) - 2:
         print(i)
         title = ''
         deadline = ''
         location = ''
         description = ''
         website = ''
-
+        
         if oppContainer[i].name == 'hr':
             try: # some of the opportunities have everything in one strong tag, others are separated between two strongs 
                 # print(oppContainer[i + 1].findChild('strong').text)
@@ -106,8 +93,6 @@ def scrape():
                 i += 1
                 continue
 
-            
-
             print(title)
             #DEADLINE -------------------------------------------------------------------------------------------
             if len(headingList) == 2:
@@ -136,7 +121,9 @@ def scrape():
                 continue
 
             # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
+            
             if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+                sameEntryCount += 1
                 print(f'title {title} already exists in database')
                 i += 1
                 continue
@@ -153,14 +140,18 @@ def scrape():
                 ]
             )
 
-            message = 'Successfully created all new entries.'
-
+            
             try:
                 completion_text = json.loads(str(response.choices[0])) # returns DICT
                 content = completion_text['message']['content']
                 print(f'json before json conversion = {content}')
                 json_result = json.loads(content)
+                
+                if json_result['description'] == 'Fee':
+                    fee += 1
+                    continue
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
+                
                 print(location)
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['keywords'].find(', ') != -1:
@@ -175,16 +166,17 @@ def scrape():
                             location=location, description=description, link=website, 
                             typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
                 newModel.save()
+                successCount += 1
             except:
+                failCount += 1
                 print('An entry failed to be added.')
-                message = 'At least 1 entry failed to be added.'
                 i += 1
                 continue
-
-            # currentRow = [title, deadline, location, description, website, typeOfOppString, APPROVED, keywordsString]
-            # writer.writerow(currentRow)
-
         i += 1
+    message = {
+        'website': 'Creative Capital',
+        'failed': str(failCount),
+        'successful': str(successCount),
+        'duplicates': str(sameEntryCount)
+    }
     return message
-                
-    # csvfile.close()

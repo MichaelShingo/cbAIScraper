@@ -9,7 +9,7 @@ def scrape():
     # modified prompt to say 'artists' not 'musicians and artists'
     PROMPT = '''In the text below, I will provide a location and description of an opportunity. Based the text, can you do these 3 things? 
             1. Give me a comma-separated list of relevant keywords that artists might search for.
-            2. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description in using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.
+            2. If the description mentions an application fee, write "Fee" for the description. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description in using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.
             3. Return the location of the opportunity in the format "city, full_state_name, full_country_name." If there is no state, leave it out. If the location is "Remote" or there is no definite location, return "Online".
             Format the result as a JSON string like this:
             {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, full_country_name","relevant_words":"word1,word2,word3"}
@@ -35,11 +35,9 @@ def scrape():
     opportunityRows = soup.select('.opportunity a')
     oppLinks = [row['href'] for row in opportunityRows]
 
-    i = 0
+    failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
+
     for oppLink in oppLinks: #loops through all opportunities on each page
-        i += 1
-        if i > 10:
-            break
         oppR = requests.get(OPP_LINK + oppLink)
         oppSoup = BeautifulSoup(oppR.content, 'html.parser')
         title = oppSoup.select('.large-title')[0].contents[0] if oppSoup.select('.large-title') else NONE
@@ -86,6 +84,7 @@ def scrape():
             deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
 
         if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+            sameEntryCount += 1
             print(f'title {title} already exists in database')
             continue
 
@@ -103,15 +102,16 @@ def scrape():
             ]
         )
 
-        message = 'Successfully created all new entries.'
-
         try:
             completion_text = json.loads(str(response.choices[0])) # returns DICT
             content = completion_text['message']['content']
             json_result = json.loads(content)
             location = json_result['location'] #if json_result['location'] != 'None' else 'Online'
 
-            if json_result['summary'] != 'None':
+            if json_result['summary'] == 'Fee':
+                fee += 1
+                continue
+            elif json_result['summary'] != 'None':
                 description = json_result['summary']
 
             if json_result['keywords'].find(', ') != -1:
@@ -123,11 +123,19 @@ def scrape():
                         location=location, description=description, link=website, 
                         typeOfOpp=[oppType], approved=True, keywords=keywordsList)
             newModel.save()
+            successCount += 1
             print(f'added {title}')
 
         except:
+            failCount += 1
             print('An entry failed to be added.')
-            message = 'At least 1 entry failed to be added.'
             continue
 
+    message = {
+        'website': 'Asian Arts Alliance',
+        'failed': str(failCount),
+        'successful': str(successCount),
+        'duplicates': str(sameEntryCount),
+        'fee': str(fee)
+    }
     return message            
