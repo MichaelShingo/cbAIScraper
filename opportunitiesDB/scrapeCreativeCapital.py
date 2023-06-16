@@ -13,7 +13,7 @@ from .models import ActiveOpps
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 3 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
-            2. If the description mentions an application fee, write "Fee" for the description.
+            2. If the description mentions an application fee or entry fee, replace the description with "Fee".
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             Format the result as a JSON string like this:
             {"keywords":"keyword1,keyword2,keyword3","description":"description_text","location":"city, state, country"}
@@ -155,7 +155,8 @@ def scrape():
                     fee += 1
                     continue
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
-                
+                if location.endswith(' None'):
+                    location = location[:-4]
                 print(location)
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['keywords'].find(', ') != -1:

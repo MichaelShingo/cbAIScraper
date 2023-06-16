@@ -9,7 +9,7 @@ def scrape():
     # modified prompt to say 'artists' not 'musicians and artists'
     PROMPT = '''In the text below, I will provide a location and description of an opportunity. Based the text, can you do these 3 things? 
             1. Give me a comma-separated list of relevant keywords that artists might search for.
-            2. If the description mentions an application fee, write "Fee" for the description. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description in using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.
+            2. If the description mentions an application fee or entry fee, replace the description with "Fee". If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description in using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.
             3. Return the location of the opportunity in the format "city, full_state_name, full_country_name." If there is no state, leave it out. If the location is "Remote" or there is no definite location, return "Online".
             Format the result as a JSON string like this:
             {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, full_country_name","relevant_words":"word1,word2,word3"}
@@ -107,6 +107,8 @@ def scrape():
             content = completion_text['message']['content']
             json_result = json.loads(content)
             location = json_result['location'] #if json_result['location'] != 'None' else 'Online'
+            if location.endswith(' None'):
+                    location = location[:-4]
 
             if json_result['summary'] == 'Fee':
                 fee += 1

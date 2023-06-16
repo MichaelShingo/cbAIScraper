@@ -7,7 +7,7 @@ from .models import ActiveOpps
 def scrape():
     PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
             1. Extract the title.
-            2. Extract the description. If the description mentions an application fee, write "Fee" for the description.
+            2. Extract the description. If the description mentions an application fee or entry fee, replace the description with "Fee".
             3. Extract the deadline date in the format MM/DD/YYYY. If there is no deadline listed, set the date to the last day of the current month.
             4. Extract the hyperlink linking to additional information.
             5. Based on the description, give me a comma-separated list of relevant keywords that artists might search for.
@@ -71,6 +71,8 @@ def scrape():
                 continue
             oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
             location = json_result['location']
+            if location.endswith(' None'):
+                location = location[:-4]
             deadline = json_result['deadline']
             print(deadline, type(deadline))
             if deadline != 'None':

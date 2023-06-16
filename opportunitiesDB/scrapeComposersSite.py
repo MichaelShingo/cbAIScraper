@@ -11,7 +11,7 @@ from .helperFunctions import tagToStr, findOppTypeTags
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
-            2. If the description mentions an application fee, write "Fee" for the description. If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
+            2. If the description mentions an application fee or entry fee, replace the description with "Fee". If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             4. Choose ONLY from the following list of words: ['Part-Time Job', 'Full-Time Job', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']. Give me a comma-separated sublist of the given list that is relevant to the description provided.
             Format the result as a JSON string like this:
@@ -95,6 +95,8 @@ def scrape():
                 print(f'json before json conversion = {content}')
                 json_result = json.loads(content)
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
+                if location.endswith(' None'):
+                    location = location[:-4]
                 # oppTypeList = (json_result['relevant_words']).split(', ') # GPT does not do well with finding oppTypes
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 
