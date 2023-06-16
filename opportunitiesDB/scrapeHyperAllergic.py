@@ -54,12 +54,16 @@ def scrape():
         openai.api_key = API_KEY
 
         # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
-        response = openai.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {'role': 'user', 'content': PROMPT + '###' + str(oppContainer[i])},
-            ]
-        )
+        try:
+            response = openai.ChatCompletion.create(
+                model='gpt-3.5-turbo',
+                messages=[
+                    {'role': 'user', 'content': PROMPT + '###' + str(oppContainer[i])},
+                ]
+            )
+        except:
+            failCount += 1
+            continue
 
         completion_text = json.loads(str(response.choices[0])) # returns DICT
         content = completion_text['message']['content']

@@ -14,7 +14,7 @@ from . import (scrapeAsianArts,
 
 class ActiveOppsListCreateAPIView(APIView):
     def get(self, request):
-        authentication_classes = [TokenAuthentication] # Don't use BasicAuthentication in production, for higher securityuse Django REST Knox
+        authentication_classes = [TokenAuthentication]
         permission_classes = [IsAuthenticated]
 
         if isinstance(request.user, AnonymousUser):
@@ -61,7 +61,7 @@ class DeleteAPIView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         data.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(data, status=status.HTTP_204_NO_CONTENT)
     
 delete_view = DeleteAPIView.as_view()
 
