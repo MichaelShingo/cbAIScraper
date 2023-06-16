@@ -42,7 +42,7 @@ def scrape():
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
 
-    for i in range(int(maxPage) + 1): #loops through all pages
+    for i in range(int(maxPage)): #loops through all pages except last one (low quality opps)
         # if i == 1: # REMOVE THIS IN FINAL VERSION
         #     break
         pageR = requests.get(PAGE_LINK + str(i))
@@ -54,46 +54,42 @@ def scrape():
             # k += 1 # FOR TESTING ONLY
             # if k == 3: # FOR TESTING ONLY
                 # break
-            oppR = requests.get(OPP_LINK + oppLink)
-            oppSoup = BeautifulSoup(oppR.content, 'html.parser')
-            title = oppSoup.select('.views-field-title .field-content')[0].contents[0] if oppSoup.select('.views-field-title .field-content') else NONE
-            descriptionTags = oppSoup.select('p') if oppSoup.select('p') else '' #TODO extra spaces are present here 
-            descriptionList = []
-
-            for tag in descriptionTags:
-                for element in tag.contents: 
-                    descriptionList.append(tagToStr(element))
-
-            descriptionList.pop()
-            description = '\n\n'.join(descriptionList)
-            deadline = oppSoup.select('.date-display-single')[0].contents[0] if oppSoup.select('.date-display-single') else NONE
-
-            if not deadline == NONE: # Dates must be YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format
-                deadline += ' 23:59'
-                deadline = datetime.strptime(deadline, '%d %b %Y %H:%M')
-                deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
-
-            website = oppSoup.select('.views-field-field-opp-url-url a')[0].contents[0] if oppSoup.select('.views-field-field-opp-url-url a') else OPP_LINK + oppLink
-            
-            # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
-            if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
-                sameEntryCount += 1
-                print(f'title {title} already exists in database')
-                continue
-
-            # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
             try:
+                oppR = requests.get(OPP_LINK + oppLink)
+                oppSoup = BeautifulSoup(oppR.content, 'html.parser')
+                title = oppSoup.select('.views-field-title .field-content')[0].contents[0] if oppSoup.select('.views-field-title .field-content') else NONE
+                descriptionTags = oppSoup.select('p') if oppSoup.select('p') else '' #TODO extra spaces are present here 
+                descriptionList = []
+
+                for tag in descriptionTags:
+                    for element in tag.contents: 
+                        descriptionList.append(tagToStr(element))
+
+                descriptionList.pop()
+                description = '\n\n'.join(descriptionList)
+                deadline = oppSoup.select('.date-display-single')[0].contents[0] if oppSoup.select('.date-display-single') else NONE
+
+                if not deadline == NONE: # Dates must be YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format
+                    deadline += ' 23:59'
+                    deadline = datetime.strptime(deadline, '%d %b %Y %H:%M')
+                    deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+
+                website = oppSoup.select('.views-field-field-opp-url-url a')[0].contents[0] if oppSoup.select('.views-field-field-opp-url-url a') else OPP_LINK + oppLink
+                
+                # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
+                if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+                    sameEntryCount += 1
+                    print(f'title {title} already exists in database')
+                    continue
+
+                # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
                 response = openai.ChatCompletion.create(
                     model='gpt-3.5-turbo',
                     messages=[
                         {'role': 'user', 'content': PROMPT + '###' + title + '. ' + description},
                     ]
                 )
-            except:
-                failCount += 1
-                continue
-
-            try:
+        
                 completion_text = json.loads(str(response.choices[0])) # returns DICT
                 content = completion_text['message']['content']
                 print(f'json before json conversion = {content}')
@@ -121,6 +117,7 @@ def scrape():
                             typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
                 newModel.save()
                 successCount += 1
+                    
             except:
                 failCount += 1
                 print('An entry failed to be added.')

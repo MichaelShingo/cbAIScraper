@@ -38,63 +38,56 @@ def scrape():
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
     
     for i in range(3, len(oppContainer)): # starts from the 3rd <p> tag to skip headings.
-        if i == 6:
-            break
-        title = ''
-        deadline = '' #if none provided, use NONE
-        location = '' #if none found, use ONLINE
-        description = ''
-        website = ''
-        
-
-        # OPEN AI SETUP
-        env = environ.Env()
-        environ.Env.read_env()
-        API_KEY = env('AI_KEY')
-        openai.api_key = API_KEY
-
-        # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
         try:
+            title = ''
+            deadline = '' #if none provided, use NONE
+            location = '' #if none found, use ONLINE
+            description = ''
+            website = ''
+            
+            # OPEN AI SETUP
+            env = environ.Env()
+            environ.Env.read_env()
+            API_KEY = env('AI_KEY')
+            openai.api_key = API_KEY
+
+            # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
             response = openai.ChatCompletion.create(
                 model='gpt-3.5-turbo',
                 messages=[
                     {'role': 'user', 'content': PROMPT + '###' + str(oppContainer[i])},
                 ]
             )
-        except:
-            failCount += 1
-            continue
 
-        completion_text = json.loads(str(response.choices[0])) # returns DICT
-        content = completion_text['message']['content']
-        print(f'json before json conversion = {content}')
-        json_result = json.loads(content)
-        location = json_result['location'] if json_result['location'] != 'None' else 'Online'
+            completion_text = json.loads(str(response.choices[0])) # returns DICT
+            content = completion_text['message']['content']
+            print(f'json before json conversion = {content}')
+            json_result = json.loads(content)
+            location = json_result['location'] if json_result['location'] != 'None' else 'Online'
 
-        description = json_result['description']
-        if description == 'Fee':
-            fee += 1
-            continue
-        oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
-        location = json_result['location']
-        deadline = json_result['deadline']
-        print(deadline, type(deadline))
-        if deadline != 'None':
-            deadline += ' 23:59'
-            deadline = datetime.strptime(deadline, '%m/%d/%Y %H:%M')
-        else:
-            deadline = datetime.strftime(datetime.today() + timedelta(days=30))
-        
-        deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
-        title = json_result['title']
-        website = json_result['hyperlink']
+            description = json_result['description']
+            if description == 'Fee':
+                fee += 1
+                continue
+            oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
+            location = json_result['location']
+            deadline = json_result['deadline']
+            print(deadline, type(deadline))
+            if deadline != 'None':
+                deadline += ' 23:59'
+                deadline = datetime.strptime(deadline, '%m/%d/%Y %H:%M')
+            else:
+                deadline = datetime.strftime(datetime.today() + timedelta(days=30))
+            
+            deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+            title = json_result['title']
+            website = json_result['hyperlink']
 
-        if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
-            sameEntryCount += 1
-            print(f'title {title} already exists in database')
-            continue
+            if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+                sameEntryCount += 1
+                print(f'title {title} already exists in database')
+                continue
 
-        try:
             if json_result['keywords'].find(', ') != -1:
                 keywordsList = json_result['keywords'].split(', ')
             else:
@@ -108,6 +101,7 @@ def scrape():
                         typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
             newModel.save()
             successCount += 1
+        
         except:
             failCount += 1
             print('An entry failed to be added.')
