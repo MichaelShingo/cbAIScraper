@@ -22,4 +22,5 @@ urlpatterns = [
     path('auth/', obtain_auth_token),
     path('admin/', admin.site.urls),
     path('api/opportunities/', include('opportunitiesDB.urls')),
+    path('api/reports/', include('reports.urls')),
 ]

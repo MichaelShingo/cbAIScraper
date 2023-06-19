@@ -169,7 +169,7 @@ def scrape():
                 # CREATE A ACTIVEOPPS Model instance and save it to the database
                 newModel = ActiveOpps(title=title, deadline=deadline,
                             location=location, description=description, link=website, 
-                            typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
+                            typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Creative Capital')
                 newModel.save()
                 successCount += 1
             except:

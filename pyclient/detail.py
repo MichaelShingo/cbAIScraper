@@ -1,7 +1,7 @@
 import requests
 
 headers = {
-    'Authorization': 'Token 5c738a4faa6ad5719886b230433efe1e4b4b8d4d'
+    'Authorization': 'Token c4f39339c02f9daa3174bd81c0da6407fdea94e0'
 }
 res = requests.get('http://127.0.0.1:8000/api/opportunities/', headers=headers)
 

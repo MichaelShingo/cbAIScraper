@@ -13,5 +13,7 @@ class ActiveOppsSerializer(serializers.ModelSerializer):
             'link',
             'typeOfOpp',
             'approved',
-            'keywords'
+            'keywords',
+            'websiteName',
+            'createdAt',
         ]

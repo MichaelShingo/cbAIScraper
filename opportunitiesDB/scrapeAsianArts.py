@@ -4,6 +4,7 @@ import requests, environ, openai, json, csv
 from .helperFunctions import findOppTypeTags
 from .models import ActiveOpps
 from . import tagLists
+from reports.models import Reports
 
 def scrape():
     # modified prompt to say 'artists' not 'musicians and artists'
@@ -36,8 +37,11 @@ def scrape():
     oppLinks = [row['href'] for row in opportunityRows]
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
-
+    i = 0
     for oppLink in oppLinks: #loops through all opportunities on each page
+        i += 1
+        if i == 3:
+            break
         try:
             oppR = requests.get(OPP_LINK + oppLink)
             oppSoup = BeautifulSoup(oppR.content, 'html.parser')
@@ -123,7 +127,7 @@ def scrape():
             
             newModel = ActiveOpps(title=title, deadline=deadline,
                         location=location, description=description, link=website, 
-                        typeOfOpp=[oppType], approved=True, keywords=keywordsList)
+                        typeOfOpp=[oppType], approved=True, keywords=keywordsList, websiteName='Asian Arts Alliance')
             newModel.save()
             successCount += 1
             print(f'added {title}')
@@ -132,7 +136,11 @@ def scrape():
             failCount += 1
             print('An entry failed to be added.')
             continue
-
+    
+    report = Reports(website='Asian Arts Alliance', failed=str(failCount),
+                     successful=str(successCount), duplicates=str(sameEntryCount),
+                     fee=str(fee))
+    report.save()
     message = {
         'website': 'Asian Arts Alliance',
         'failed': str(failCount),

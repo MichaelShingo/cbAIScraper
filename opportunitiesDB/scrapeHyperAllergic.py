@@ -30,7 +30,6 @@ def scrape():
             url = entryTitle.attrs['href']
         
     #SCRAPING ---------------------------------------------------------
-    print(url)
     r = requests.get(url)
     soup = BeautifulSoup(r.content, 'html.parser')
     oppContainer = soup.select('#pico > p')
@@ -61,7 +60,6 @@ def scrape():
 
             completion_text = json.loads(str(response.choices[0])) # returns DICT
             content = completion_text['message']['content']
-            print(f'json before json conversion = {content}')
             json_result = json.loads(content)
             location = json_result['location'] if json_result['location'] != 'None' else 'Online'
 
@@ -74,7 +72,6 @@ def scrape():
             if location.endswith(' None'):
                 location = location[:-4]
             deadline = json_result['deadline']
-            print(deadline, type(deadline))
             if deadline != 'None':
                 deadline += ' 23:59'
                 deadline = datetime.strptime(deadline, '%m/%d/%Y %H:%M')
@@ -83,6 +80,7 @@ def scrape():
             
             deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
             title = json_result['title']
+            print(f'Added | {title}')
             website = json_result['hyperlink']
 
             if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
@@ -100,7 +98,7 @@ def scrape():
             # CREATE A ACTIVEOPPS Model instance and save it to the database
             newModel = ActiveOpps(title=title, deadline=deadline,
                         location=location, description=description, link=website, 
-                        typeOfOpp=oppTypeList, approved=True, keywords=keywordsList)
+                        typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Hyper Allergic')
             newModel.save()
             successCount += 1
         

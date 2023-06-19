@@ -2,6 +2,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import ActiveOpps
+from datetime import datetime
 from .serializers import ActiveOppsSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -20,7 +21,6 @@ class ActiveOppsListCreateAPIView(APIView):
         if isinstance(request.user, AnonymousUser):
             status_code = status.HTTP_403_FORBIDDEN # 401 must include WWW-Authenticate header with instructions on how to authenticate
             return Response({'content': 'Forbidden'}, status=status_code)
-        
         queryset = ActiveOpps.objects.all()
         serializer = ActiveOppsSerializer(queryset, many=True)
         status_code = status.HTTP_200_OK
@@ -31,6 +31,18 @@ class ActiveOppsListCreateAPIView(APIView):
         pass
 
 opps_list_create_view = ActiveOppsListCreateAPIView.as_view()
+
+class ActiveOppsListMonthAPIView(APIView):
+    def get(self, request):
+        today = datetime.today()
+        curMonthNum = datetime.strftime(today, '%m')
+        queryset = ActiveOpps.objects.filter(createdAt__month=curMonthNum)
+        serializer = ActiveOppsSerializer(queryset, many=True)
+        status_code = status.HTTP_200_OK
+
+        return Response(serializer.data, status=status_code)
+    
+opps_list_month_view = ActiveOppsListMonthAPIView.as_view()
 
 
 class TestModelCreation(APIView):
@@ -61,7 +73,8 @@ class DeleteAPIView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         data.delete()
-        return Response(data, status=status.HTTP_204_NO_CONTENT)
+        serializer = ActiveOppsSerializer(data)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
     
 delete_view = DeleteAPIView.as_view()
 
