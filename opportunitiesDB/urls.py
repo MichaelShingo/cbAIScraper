@@ -11,4 +11,5 @@ urlpatterns = [
     path('scrapeAsian/', views.asian_arts_scrape_view),
     path('scrapeHyper/', views.hyper_scrape_view),
     path('thismonth/', views.opps_list_month_view),
+    path('formatLocation/', views.format_location_view),
 ]

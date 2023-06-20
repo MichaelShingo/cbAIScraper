@@ -11,6 +11,18 @@ def tagToStr(tag): #recursive function that converts tag and its contents to str
         else:
             return ''
         
+def formatLocation(location:str):
+    res = location
+    if location == 'None':
+        res = 'Online'
+    elif location.endswith(', None'):
+        res = location[:-6]
+    elif location.endswith(', USA'):
+        res = location[:-5] + ' United States'
+    elif location.endswith(', US'):
+        res = location[:-4] + ' United States'
+    return res
+        
 def findOppTypeTags(descriptionLower):
     result = []
     for type in typeOfOpportunity:

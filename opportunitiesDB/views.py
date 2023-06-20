@@ -6,6 +6,7 @@ from datetime import datetime
 from .serializers import ActiveOppsSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from .helperFunctions import formatLocation
 from django.contrib.auth.models import AnonymousUser
 from . import (scrapeAsianArts, 
                scrapeHyperAllergic, 
@@ -34,6 +35,8 @@ opps_list_create_view = ActiveOppsListCreateAPIView.as_view()
 
 class ActiveOppsListMonthAPIView(APIView):
     def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
         today = datetime.today()
         curMonthNum = datetime.strftime(today, '%m')
         queryset = ActiveOpps.objects.filter(createdAt__month=curMonthNum)
@@ -115,18 +118,6 @@ class AsianArtsScrapeAPIView(APIView):
     
 asian_arts_scrape_view = AsianArtsScrapeAPIView.as_view()
 
-# class ArtworkAllianceScrapeAPIView(APIView):
-#     def get(self, request):
-#         authentication_classes = [TokenAuthentication]
-#         permission_classes = [IsAuthenticated]
-#         message = scrapeArtworkArchive.scrape()
-#         data = {'message': message,
-#                 'status': 'success'}
-#         status_code = status.HTTP_202_ACCEPTED
-#         return Response(data, status=status_code)
-    
-# artwork_scrape_view = ArtworkAllianceScrapeAPIView.as_view()
-
 class HyperAllergicScrapeAPIView(APIView):
     def get(self, request):
         authentication_classes = [TokenAuthentication]
@@ -138,3 +129,21 @@ class HyperAllergicScrapeAPIView(APIView):
         return Response(data, status=status_code)
     
 hyper_scrape_view = HyperAllergicScrapeAPIView.as_view()
+
+class FormatLocationAPIView(APIView):
+    def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
+        queryset = ActiveOpps.objects.all()
+        for obj in queryset:
+            print(obj.location)
+            obj.location = formatLocation(obj.location)
+            print(obj.location)
+            print('________________')
+            obj.save()
+        data = {'message': 'success',
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+        return Response(data, status=status_code)
+
+format_location_view = FormatLocationAPIView.as_view()

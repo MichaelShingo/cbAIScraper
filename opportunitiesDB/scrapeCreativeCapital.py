@@ -4,19 +4,17 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json
-from .helperFunctions import findOppTypeTags
+from .helperFunctions import findOppTypeTags, formatLocation
 from .models import ActiveOpps
-
-# ISSUES
-    # How do you handle RateLimitError from ChatGPT? Wait and try again in a few minutes?
+from reports.models import Reports
 
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 3 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
             2. If the description mentions an application fee or entry fee, replace the description with "Fee".
-            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
+            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             Format the result as a JSON string like this:
-            {"keywords":"keyword1,keyword2,keyword3","description":"description_text","location":"city, state, country"}
+            {"keywords":"keyword1,keyword2,keyword3","description":"description_text","location":"city, full_state_name, country"}
             '''
 
     # OPEN AI SETUP
@@ -59,8 +57,6 @@ def scrape():
         
         if oppContainer[i].name == 'hr':
             try: # some of the opportunities have everything in one strong tag, others are separated between two strongs 
-                # print(oppContainer[i + 1].findChild('strong').text)
-                # headingList = oppContainer[i + 1].findChild('strong').text.split('\n')
                 strongTags = oppContainer[i + 1].find_all('strong') # sometimes this doesn't get all the strong tags
                 headingList = strongTags[0].text.split('\n')
                 if len(strongTags) > 1:
@@ -119,8 +115,6 @@ def scrape():
             if deadline == '':
                 i += 1
                 continue
-
-            # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
             
             if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
                 sameEntryCount += 1
@@ -154,9 +148,12 @@ def scrape():
                 if json_result['description'] == 'Fee':
                     fee += 1
                     continue
+
+                if len(description) < 40:
+                    continue
+
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
-                if location.endswith(' None'):
-                    location = location[:-4]
+                location = formatLocation(location)
                 print(location)
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['keywords'].find(', ') != -1:
@@ -178,6 +175,11 @@ def scrape():
                 i += 1
                 continue
         i += 1
+    
+    report = Reports(website='Creative Capital', failed=str(failCount),
+                     successful=str(successCount), duplicates=str(sameEntryCount),
+                     fee=str(fee))
+    report.save()
     message = {
         'website': 'Creative Capital',
         'failed': str(failCount),

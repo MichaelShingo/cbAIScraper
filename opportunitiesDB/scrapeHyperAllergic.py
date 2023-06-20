@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json
-from .helperFunctions import findOppTypeTags
+from .helperFunctions import findOppTypeTags, formatLocation
 from .models import ActiveOpps
+from reports.models import Reports
 
 def scrape():
     PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
@@ -11,9 +12,9 @@ def scrape():
             3. Extract the deadline date in the format MM/DD/YYYY. If there is no deadline listed, set the date to the last day of the current month.
             4. Extract the hyperlink linking to additional information.
             5. Based on the description, give me a comma-separated list of relevant keywords that artists might search for.
-            6. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country". If there is no state, leave it out. If you can't find a definite location, write "None". If the location contains a US state, write "United States" for country.
+            6. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country". If there is no state, leave it out. If you can't find a definite location, write "None". If the location contains a US state, write "United States" for country.
             Format the result as a JSON string like this:
-            {"title":"Title of the Opportunity","description":"description of the opportunity","deadline":"MM/DD/YYYY","hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, state, country"}
+            {"title":"Title of the Opportunity","description":"description of the opportunity","deadline":"MM/DD/YYYY","hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, full_state_name, country"}
             '''
 
     # GET CURRENT MONTH URL
@@ -64,13 +65,17 @@ def scrape():
             location = json_result['location'] if json_result['location'] != 'None' else 'Online'
 
             description = json_result['description']
+
             if description == 'Fee':
                 fee += 1
                 continue
+            elif len(description) < 40:
+                continue
+
             oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
             location = json_result['location']
-            if location.endswith(' None'):
-                location = location[:-4]
+            location = formatLocation(location)
+
             deadline = json_result['deadline']
             if deadline != 'None':
                 deadline += ' 23:59'
@@ -98,7 +103,7 @@ def scrape():
             # CREATE A ACTIVEOPPS Model instance and save it to the database
             newModel = ActiveOpps(title=title, deadline=deadline,
                         location=location, description=description, link=website, 
-                        typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Hyper Allergic')
+                        typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='HyperAllergic')
             newModel.save()
             successCount += 1
         
@@ -106,7 +111,12 @@ def scrape():
             failCount += 1
             print('An entry failed to be added.')
             continue
-    
+
+    report = Reports(website='HyperAllergic', failed=str(failCount),
+                     successful=str(successCount), duplicates=str(sameEntryCount),
+                     fee=str(fee))
+    report.save()
+
     message = {
         'website': 'HyperAllergic',
         'failed': str(failCount),

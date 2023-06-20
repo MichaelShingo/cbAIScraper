@@ -2,20 +2,17 @@ import requests, environ, openai, json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import tagToStr, findOppTypeTags
-
-# Issues
-        # can it filter out anything that has an application fee?
-        # if it's missing certain fields, don't put it on the database at all? URL in particular
+from .helperFunctions import tagToStr, findOppTypeTags, formatLocation
+from reports.models import Reports
 
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
             2. If the description mentions an application fee or entry fee, replace the description with "Fee". If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description using a minimum of 100 words. Include important requirements and any compensation as applicable.
-            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, state, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
+            3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             4. Choose ONLY from the following list of words: ['Part-Time Job', 'Full-Time Job', 'scholarship', 'grant', 'workshop', 'residency', 'contest',  'paid internship', 'unpaid internship']. Give me a comma-separated sublist of the given list that is relevant to the description provided.
             Format the result as a JSON string like this:
-            {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, state, country","relevant_words":"word1,word2,word3"}
+            {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, country","relevant_words":"word1,word2,word3"}
             '''
     OPP_LINK = 'http://live-composers.pantheonsite.io'
     PAGE_LINK = 'http://live-composers.pantheonsite.io/opps/results/taxonomy%3A13?page=' #pages start from 0
@@ -95,8 +92,7 @@ def scrape():
                 print(f'json before json conversion = {content}')
                 json_result = json.loads(content)
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
-                if location.endswith(' None'):
-                    location = location[:-4]
+                location = formatLocation(location)
                 # oppTypeList = (json_result['relevant_words']).split(', ') # GPT does not do well with finding oppTypes
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 
@@ -105,6 +101,9 @@ def scrape():
                     continue
                 elif json_result['summary'] != 'None':
                     description = json_result['summary']
+
+                if len(description) < 40:
+                    continue
                     
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')
@@ -124,6 +123,11 @@ def scrape():
                 failCount += 1
                 print('An entry failed to be added.')
                 continue
+
+    report = Reports(website='Composers Site', failed=str(failCount),
+                     successful=str(successCount), duplicates=str(sameEntryCount),
+                     fee=str(fee))
+    report.save()
 
     message = {
         'website': 'Composers Site',

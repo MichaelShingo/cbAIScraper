@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json, csv
-from .helperFunctions import findOppTypeTags
+from .helperFunctions import findOppTypeTags, formatLocation
 from .models import ActiveOpps
 from . import tagLists
 from reports.models import Reports
@@ -37,11 +37,7 @@ def scrape():
     oppLinks = [row['href'] for row in opportunityRows]
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
-    i = 0
     for oppLink in oppLinks: #loops through all opportunities on each page
-        i += 1
-        if i == 3:
-            break
         try:
             oppR = requests.get(OPP_LINK + oppLink)
             oppSoup = BeautifulSoup(oppR.content, 'html.parser')
@@ -111,14 +107,16 @@ def scrape():
             content = completion_text['message']['content']
             json_result = json.loads(content)
             location = json_result['location'] #if json_result['location'] != 'None' else 'Online'
-            if location.endswith(' None'):
-                    location = location[:-4]
+            location = formatLocation(location)
 
             if json_result['summary'] == 'Fee':
                 fee += 1
                 continue
             elif json_result['summary'] != 'None':
                 description = json_result['summary']
+
+            if len(description) < 40:
+                continue
 
             if json_result['keywords'].find(', ') != -1:
                 keywordsList = json_result['keywords'].split(', ')
