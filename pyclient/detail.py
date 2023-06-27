@@ -5,6 +5,9 @@ headers = {
 }
 res = requests.get('http://127.0.0.1:8000/api/opportunities/', headers=headers)
 
+# res = requests.get('https://web-production-022b.up.railway.app/api/opportunities/', headers=headers)
+
+
 print(res.content)
 print(type(res.content))
 print(res.status_code)

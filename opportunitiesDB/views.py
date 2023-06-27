@@ -11,8 +11,30 @@ from django.contrib.auth.models import AnonymousUser
 from . import (scrapeAsianArts, 
                scrapeHyperAllergic, 
                scrapeComposersSite, 
-               scrapeCreativeCapital)
+               scrapeCreativeCapital,
+               generateTitles)
 
+class PopulateTitlesAPIView(APIView):
+    # for opportunities already in the database, add AI generated titles
+    def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
+
+        queryset = ActiveOpps.objects.all()
+        for obj in queryset:
+            try:
+                title = generateTitles.generate(obj.title + ' - ' + obj.description)
+                obj.titleAI = title
+                print(title)
+            except:
+                obj.titleAI = obj.title
+            obj.save()
+        
+        data = {'message': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+        return Response(data, status=status_code)
+
+generate_titles_view = PopulateTitlesAPIView.as_view()
 
 class ActiveOppsListCreateAPIView(APIView):
     def get(self, request):

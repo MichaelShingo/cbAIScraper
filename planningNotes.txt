@@ -1,0 +1,29 @@
+- Postgres database stores all scraped data in multiple tables.
+- Current opportunities and expired opportunities.
+- Application needs to scrape data from websites on certain intervals of time, minimum every month, maximum every 6 months.
+- Application will check if there are any duplicates and exclude them.
+- Will send each entry to OpenAI API to extract keywords, clean up the description, find the location, etc.
+- There will be permissions so only our Wix can access the API. Wix will fetch from the database every month or so.
+
+- Potentially also create a way for it to scrape emails of university faculty.
+
+
+- Create a textClient.py script that requests OpenAI, awaits, then requests your API.
+- Request OpenAI with url of webpage and instructions. It will respond with text. This needs to happen every certain number of months. Maybe the fields are tab separated and you can pass this as a request into your API, which will parse it like a TSV file.
+- 
+- Get rid of duplicates - 
+- Scrape monthly: creative capital, 
+- Scrape every 6 months: composers site, asian arts alliance
+
+
+1. Format everything, scrape 
+2. remove duplicates
+3. keyword tags 
+
+ChatGPT chatbot 
+
+
+Automate emailing university faculty to advertise the database.
+List of Universities -> to Wiki list of faculty -> scrape email of all faculty -> send emails
+
+program notes app - partner with organizations that use concerts, gamified, social-media type 

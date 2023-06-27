@@ -1,0 +1,8 @@
+2. set up CB credit card on OpenAI
+3. UPDATE THE collection importData imports to.... (after July check)
+6. DEBUG should be set to false
+
+
+should there be a timer for how long each scrape takes?
+make a testing git branch, then merge into main from there for deploy
+should the database be cleared after a certain point? 

@@ -7,6 +7,7 @@ class ActiveOppsSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'title',
+            'titleAI',
             'deadline',
             'location',
             'description',

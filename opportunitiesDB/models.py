@@ -3,6 +3,7 @@ from django.contrib.postgres.fields import ArrayField
 
 class ActiveOpps(models.Model):
     title = models.CharField(max_length=150)
+    titleAI = models.CharField(max_length=150)
     deadline = models.DateTimeField(null=True, blank=True)
     location = models.CharField(max_length=150)
     description = models.TextField()
