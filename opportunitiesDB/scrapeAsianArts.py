@@ -8,13 +8,17 @@ from reports.models import Reports
 
 def scrape():
     # modified prompt to say 'artists' not 'musicians and artists'
-    PROMPT = '''In the text below, I will provide a location and description of an opportunity. Based the text, can you do these 3 things? 
+    PROMPT = '''In the text below, I will provide a location and description of an opportunity. Based the text, can you do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that artists might search for.
             2. If the description mentions an application fee or entry fee, replace the description with "Fee". If the description is less than 150 words, return "None". If the description is greater than 150 words, summarize the description in using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.
             3. Return the location of the opportunity in the format "city, full_state_name, full_country_name." If there is no state, leave it out. If the location is "Remote" or there is no definite location, return "Online".
+            4. Using less than 12 words, can you generate a title for this opportunity based on it's description? The title should read like a professional job listing. Include the name of the organization or person who posted the opportunity if possible.
             Format the result as a JSON string like this:
-            {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, full_country_name","relevant_words":"word1,word2,word3"}
+            {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, full_country_name","relevant_words":"word1,word2,word3","title":"title - organization_name"}
             '''
+    
+    
+    
     OPP_LINK = 'https://www.aaartsalliance.org'
     NONE = 'None'
 
