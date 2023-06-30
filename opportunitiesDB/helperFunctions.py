@@ -21,6 +21,7 @@ def formatLocation(location:str):
         res = location[:-5] + ' United States'
     elif location.endswith(', US'):
         res = location[:-4] + ' United States'
+    res = res.replace(' None,', '')
     return res
         
 def findOppTypeTags(descriptionLower):

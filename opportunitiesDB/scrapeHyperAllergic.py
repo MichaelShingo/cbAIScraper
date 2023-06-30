@@ -9,12 +9,13 @@ def scrape():
     PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
             1. Extract the description. If the description mentions an application fee or entry fee, replace the description with "Fee".
             2. Extract the deadline date in the format MM/DD/YYYY. If there is no deadline listed, set the date to the last day of the current month.
+            3. Extract the title of the opportunity and save it in the "original_title" field.
             3. Extract the hyperlink linking to additional information.
             4. Based on the description, give me a comma-separated list of relevant keywords that artists might search for.
-            5. Using less than 12 words, can you generate a title for this opportunity based on it's description? The title should read like a professional job listing. Include the name of the organization or person who posted the opportunity if possible.
+            5. Using less than 12 words, can you generate a title for this opportunity based on it's description and save it in the "aititle" field? The title should read like a professional job listing. Include the name of the organization or person who posted the opportunity if possible.
             6. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country". If there is no state, leave it out. If you can't find a definite location, write "None". If the location contains a US state, write "United States" for country.
             Format the result as a JSON string like this:
-            {"title":"title - organization_name","description":"description of the opportunity","deadline":"MM/DD/YYYY","hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, full_state_name, country"}
+            {"original_title":"title","aititle":"title - organization_name","description":"description of the opportunity","deadline":"MM/DD/YYYY","hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, full_state_name, country"}
             '''
 
     # GET CURRENT MONTH URL
@@ -36,7 +37,7 @@ def scrape():
     oppContainer = soup.select('#pico > p')
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
-    
+    errorMessage = 'None'
     for i in range(3, len(oppContainer)): # starts from the 3rd <p> tag to skip headings.
         try:
             title = ''
@@ -44,6 +45,8 @@ def scrape():
             location = '' #if none found, use ONLINE
             description = ''
             website = ''
+            deadlineString = ''
+            
             
             # OPEN AI SETUP
             env = environ.Env()
@@ -74,7 +77,8 @@ def scrape():
 
             oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
             location = json_result['location']
-            location = formatLocation(location)
+            for l in range(2):
+                location = formatLocation(location)
 
             deadline = json_result['deadline']
             if deadline != 'None':
@@ -83,12 +87,15 @@ def scrape():
             else:
                 deadline = datetime.strftime(datetime.today() + timedelta(days=30))
             
-            deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
-            title = json_result['title']
-            print(f'Added | {title}')
+            deadlineDate = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+            deadlineString = datetime.strftime(deadline, '%B %d, %Y')
+
+            title = json_result['original_title']
+            titleAI = json_result['aititle']
+            
             website = json_result['hyperlink']
 
-            if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+            if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
                 sameEntryCount += 1
                 print(f'title {title} already exists in database')
                 continue
@@ -101,15 +108,17 @@ def scrape():
             keywordsList.extend(composerKeywords)
             
             # CREATE A ACTIVEOPPS Model instance and save it to the database
-            newModel = ActiveOpps(title=title, deadline=deadline,
-                        location=location, description=description, link=website, 
+            newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,
+                        location=location, description=description, link=website, deadlineString=deadlineString,
                         typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='HyperAllergic')
             newModel.save()
             successCount += 1
+            print(f'Added | {title}')
         
-        except:
+        except Exception as e:
             failCount += 1
-            print('An entry failed to be added.')
+            print('An entry failed to be added.', str(e))
+            errorMessage = str(e)
             continue
 
     report = Reports(website='HyperAllergic', failed=str(failCount),
@@ -122,7 +131,8 @@ def scrape():
         'failed': str(failCount),
         'successful': str(successCount),
         'duplicates': str(sameEntryCount),
-        'fee': str(fee)
+        'fee': str(fee),
+        'error': errorMessage
     }
 
     return message

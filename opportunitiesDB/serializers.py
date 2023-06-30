@@ -17,4 +17,5 @@ class ActiveOppsSerializer(serializers.ModelSerializer):
             'keywords',
             'websiteName',
             'createdAt',
+            'deadlineString',
         ]

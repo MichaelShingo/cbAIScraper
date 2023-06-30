@@ -9,7 +9,7 @@ from .models import ActiveOpps
 from reports.models import Reports
 
 def scrape():
-    PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 3 things? 
+    PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
             2. If the description mentions an application fee or entry fee, replace the description with "Fee".
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
@@ -56,6 +56,10 @@ def scrape():
         location = ''
         description = ''
         website = ''
+        deadlineString = ''
+        deadlineDate = ''
+        errorMessage = 'None'
+
         
         if oppContainer[i].name == 'hr':
             try: # some of the opportunities have everything in one strong tag, others are separated between two strongs 
@@ -97,28 +101,34 @@ def scrape():
                 deadline = headingList[1]  
             elif len(headingList) == 3:
                 deadline = headingList[2]
+
+            print(deadline)
             
             try:
                 if deadline != '': # deadline is 23:59 on the date provided, new date regex needed depending on site's date format
                     deadlineParse = deadline[10:] + ' 23:59'
                     deadlineParse = datetime.strptime(deadlineParse, '%B %d, %Y %H:%M')
-                    deadline = datetime.strftime(deadlineParse, '%Y-%m-%d %H:%M:59Z')
+                    deadlineDate = datetime.strftime(deadlineParse, '%Y-%m-%d %H:%M:59Z')
+                    deadlineString = datetime.strftime(deadlineParse, '%B %d, %Y')
+                    print('!!!!', deadlineString)
             except: # if deadline is grouped together in one tag with location, so does not match above format
                 try:
                     deadlineList = deadline.split('\n')
                     deadline = deadlineList[1]
                     deadline = deadline[10:]
+                    print('DEADLINE', deadline)
                     deadline = datetime.strptime(deadline, '%B %d, %Y %H:%M')
-                    deadline = datetime.strftime(deadline, '%d/%m/%Y %H:%M')
+                    deadlineDate = datetime.strftime(deadline, '%d/%m/%Y %H:%M')
+                    deadlineString = datetime.strftime(deadline, '%B %e, %Y')
                     location = deadlineList[0]
                 except:
                     i += 1
                     continue
-            if deadline == '':
+            if deadlineDate == '':
                 i += 1
                 continue
             
-            if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+            if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
                 sameEntryCount += 1
                 print(f'title {title} already exists in database')
                 i += 1
@@ -155,25 +165,27 @@ def scrape():
                     continue
 
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
-                location = formatLocation(location)
+                for l in range(2):
+                    location = formatLocation(location)
                 print(location)
+                titleAI = json_result['title']
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')
                 else:
                     keywordsList = json_result['keywords'].split(',')
-                print(keywordsList)
-                print(oppTypeList)
+                print(titleAI, deadlineString)
                 
                 # CREATE A ACTIVEOPPS Model instance and save it to the database
-                newModel = ActiveOpps(title=title, deadline=deadline,
-                            location=location, description=description, link=website, 
+                newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,
+                            location=location, description=description, link=website, deadlineString=deadlineString,
                             typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Creative Capital')
                 newModel.save()
                 successCount += 1
-            except:
+            except Exception as e:
                 failCount += 1
-                print('An entry failed to be added.')
+                print('An entry failed to be added.', str(e))
+                errorMessage = str(e)
                 i += 1
                 continue
         i += 1
@@ -186,6 +198,7 @@ def scrape():
         'website': 'Creative Capital',
         'failed': str(failCount),
         'successful': str(successCount),
-        'duplicates': str(sameEntryCount)
+        'duplicates': str(sameEntryCount),
+        'error': errorMessage,
     }
     return message

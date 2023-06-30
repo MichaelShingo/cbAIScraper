@@ -27,6 +27,8 @@ def scrape():
     location = '' #if none found, use ONLINE
     description = ''
     website = ''
+    deadlineString = ''
+    errorMessage = 'None'
 
     # OPEN AI SETUP
     env = environ.Env()
@@ -86,9 +88,10 @@ def scrape():
             if not deadline == NONE: #deadline is 23:59 on the date provided, new date regex needed depending on site's date format
                 deadline += ' 23:59'
                 deadline = datetime.strptime(deadline, '%b %d, %Y %H:%M')
-                deadline = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+                deadlineDate = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+                deadlineString = datetime.strftime(deadline, '%B %d, %Y')
 
-            if ActiveOpps.objects.filter(title=title, deadline=deadline).exists():
+            if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
                 sameEntryCount += 1
                 print(f'title {title} already exists in database')
                 continue
@@ -111,7 +114,8 @@ def scrape():
             content = completion_text['message']['content']
             json_result = json.loads(content)
             location = json_result['location'] #if json_result['location'] != 'None' else 'Online'
-            location = formatLocation(location)
+            for l in range(2):
+                location = formatLocation(location)
 
             if json_result['summary'] == 'Fee':
                 fee += 1
@@ -122,21 +126,24 @@ def scrape():
             if len(description) < 40:
                 continue
 
+            titleAI = json_result['title']
+
             if json_result['keywords'].find(', ') != -1:
                 keywordsList = json_result['keywords'].split(', ')
             else:
                 keywordsList = json_result['keywords'].split(',')
             
-            newModel = ActiveOpps(title=title, deadline=deadline,
-                        location=location, description=description, link=website, 
+            newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,
+                        location=location, description=description, link=website, deadlineString=deadlineString,
                         typeOfOpp=[oppType], approved=True, keywords=keywordsList, websiteName='Asian Arts Alliance')
             newModel.save()
             successCount += 1
             print(f'added {title}')
       
-        except:
+        except Exception as e:
             failCount += 1
             print('An entry failed to be added.')
+            errorMessage = str(e)
             continue
     
     report = Reports(website='Asian Arts Alliance', failed=str(failCount),
@@ -148,6 +155,7 @@ def scrape():
         'failed': str(failCount),
         'successful': str(successCount),
         'duplicates': str(sameEntryCount),
-        'fee': str(fee)
+        'fee': str(fee),
+        'error': errorMessage
     }
     return message            

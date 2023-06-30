@@ -13,3 +13,4 @@ class ActiveOpps(models.Model):
     keywords = ArrayField(models.CharField(max_length=75))
     websiteName = models.CharField(max_length=150)
     createdAt = models.DateTimeField(auto_now_add=True)
+    deadlineString = models.CharField(max_length=50)
