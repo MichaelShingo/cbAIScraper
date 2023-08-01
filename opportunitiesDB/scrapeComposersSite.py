@@ -2,7 +2,7 @@ import requests, environ, openai, json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import tagToStr, findOppTypeTags, formatLocation
+from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle
 from reports.models import Reports
 
 def scrape():
@@ -111,6 +111,7 @@ def scrape():
                     continue
 
                 titleAI = json_result['title']
+                titleAI = formatTitle(titleAI)
                     
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')

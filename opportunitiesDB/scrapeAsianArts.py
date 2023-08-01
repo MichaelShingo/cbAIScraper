@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json, csv
-from .helperFunctions import findOppTypeTags, formatLocation
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
 from .models import ActiveOpps
 from . import tagLists
 from reports.models import Reports

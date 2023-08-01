@@ -12,6 +12,7 @@ from . import (scrapeAsianArts,
                scrapeHyperAllergic, 
                scrapeComposersSite, 
                scrapeCreativeCapital,
+               scrapeCreativeCapitalAI,
                generateTitles)
 
 class PopulateTitlesAPIView(APIView):
@@ -122,7 +123,7 @@ class CreativeCapitalScrapeAPIView(APIView):
     def get(self, request):
         authentication_classes = [TokenAuthentication]
         permission_classes = [IsAuthenticated]
-        message = scrapeCreativeCapital.scrape()
+        message = scrapeCreativeCapitalAI.scrape()
         status_code = status.HTTP_202_ACCEPTED
         return Response(message, status=status_code)
     

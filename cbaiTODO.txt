@@ -1,0 +1,16 @@
+
+- Can you make the search function more refined ( why does searaching composer and composition how things that have nothing to do with it)?
+
+- DEPLOY THE APP
+- Add extra field to report database  for most recent error message.
+
+- Duplicates when AI finds different dates Ucross Residency - https://creative-capital.org/2023/06/28/artist-opportunities-july-and-august-2023/  - what if you just check the title from now on? But archive opporutnities every month so you can get the same opp again with a different deadline? 
+	 - it should be fine because wix importData() function checks only AI title duplicates. And it does archiving on its end.
+
+- still have issue where location comes out as none, can you just run the location editing script on all the of them? 
+
+"London, None, United Kingdom",
+"London, None"
+
+
+Music Engraving & Editing Service - Stanley M. Hoffman - can you exclude this all the time? (list of banned opportunities)

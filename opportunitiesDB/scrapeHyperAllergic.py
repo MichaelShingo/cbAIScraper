@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json
-from .helperFunctions import findOppTypeTags, formatLocation
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
 from .models import ActiveOpps
 from reports.models import Reports
 
@@ -19,22 +19,28 @@ def scrape():
             '''
 
     # GET CURRENT MONTH URL
-    url = ''
-    indexPage = 'https://hyperallergic.com/tag/opportunities/'
-    r = requests.get(indexPage)
-    soup = BeautifulSoup(r.content, 'html.parser')
-    entryTitles = soup.select('.entry-title a')
-    today = datetime.today()
-    curMonth = datetime.strftime(today, '%B')
-    curYear = datetime.strftime(today, '%Y')
-    for entryTitle in entryTitles:
-        if entryTitle.text == f'Opportunities in {curMonth} {curYear}':
-            url = entryTitle.attrs['href']
-        
-    #SCRAPING ---------------------------------------------------------
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, 'html.parser')
-    oppContainer = soup.select('#pico > p')
+    try:
+        url = ''
+        indexPage = 'https://hyperallergic.com/tag/opportunities/'
+        r = requests.get(indexPage)
+        soup = BeautifulSoup(r.content, 'html.parser')
+        entryTitles = soup.select('.entry-title a')
+        today = datetime.today()
+        curMonth = datetime.strftime(today, '%B')
+        curYear = datetime.strftime(today, '%Y')
+        for entryTitle in entryTitles:
+            if entryTitle.text == f'Opportunities in {curMonth} {curYear}':
+                url = entryTitle.attrs['href']
+            
+        #SCRAPING ---------------------------------------------------------
+        r = requests.get(url)
+        soup = BeautifulSoup(r.content, 'html.parser')
+        oppContainer = soup.select('#pico > p')
+    except Exception as e:
+        return {'website': 'HyperAllergic',
+                'details': str(e),
+                'message': 'Opportunities URL not found.'
+                }
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
     errorMessage = 'None'
@@ -92,6 +98,7 @@ def scrape():
 
             title = json_result['original_title']
             titleAI = json_result['aititle']
+            titleAI = formatTitle(titleAI)
             
             website = json_result['hyperlink']
 

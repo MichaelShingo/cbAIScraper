@@ -4,7 +4,7 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import requests, environ, openai, json
-from .helperFunctions import findOppTypeTags, formatLocation
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
 from .models import ActiveOpps
 from reports.models import Reports
 
@@ -29,8 +29,8 @@ def scrape():
     #SCRAPING ---------------------------------------------------------
     today = datetime.today()
     curMonthStr = datetime.strftime(today, '%B')
-    prevMonthNum = datetime.strftime(today - timedelta(days=30), '%m')
-    nextMonthStr = datetime.strftime(today + timedelta(days=30), '%B')
+    prevMonthNum = datetime.strftime(today - timedelta(days=15), '%m')
+    nextMonthStr = datetime.strftime(today + timedelta(days=32), '%B')
     year = datetime.strftime(today, '%Y')
     for day in range(25, 32):
         urlVersion = f'https://creative-capital.org/{year}/{prevMonthNum}/{day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'
@@ -41,6 +41,7 @@ def scrape():
                 'url': urlVersion, 
             })
         if 200 <= r.status_code < 300:
+            print(f'WORKING URL = {urlVersion}')
             break
 
     # print(r.text)
@@ -60,6 +61,8 @@ def scrape():
         deadlineDate = ''
         errorMessage = 'None'
 
+        print(oppContainer[i].name)
+
         
         if oppContainer[i].name == 'hr':
             try: # some of the opportunities have everything in one strong tag, others are separated between two strongs 
@@ -69,7 +72,9 @@ def scrape():
                     headingList.append(strongTags[1].text)
 
             except:
+                print('did not find hr tag, continue')
                 i += 1
+                failCount += 1
                 continue
 
             title = headingList[0]
@@ -116,7 +121,6 @@ def scrape():
                     deadlineList = deadline.split('\n')
                     deadline = deadlineList[1]
                     deadline = deadline[10:]
-                    print('DEADLINE', deadline)
                     deadline = datetime.strptime(deadline, '%B %d, %Y %H:%M')
                     deadlineDate = datetime.strftime(deadline, '%d/%m/%Y %H:%M')
                     deadlineString = datetime.strftime(deadline, '%B %e, %Y')
@@ -154,7 +158,6 @@ def scrape():
             try:
                 completion_text = json.loads(str(response.choices[0])) # returns DICT
                 content = completion_text['message']['content']
-                print(f'json before json conversion = {content}')
                 json_result = json.loads(content)
                 
                 if json_result['description'] == 'Fee':
@@ -169,6 +172,7 @@ def scrape():
                     location = formatLocation(location)
                 print(location)
                 titleAI = json_result['title']
+                titleAI = formatTitle(titleAI)
                 oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')

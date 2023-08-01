@@ -10,7 +10,11 @@ def tagToStr(tag): #recursive function that converts tag and its contents to str
             return tagToStr(tag.contents[0])
         else:
             return ''
-        
+
+def formatTitle(title:str):
+    res = title.replace(' - None', '')
+    return res 
+
 def formatLocation(location:str):
     res = location
     if location == 'None':
