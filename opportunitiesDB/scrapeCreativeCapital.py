@@ -11,7 +11,7 @@ from reports.models import Reports
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 4 things? 
             1. Give me a comma-separated list of relevant keywords that musicians and artists might search for.
-            2. If the description mentions an application fee or entry fee, replace the description with "Fee".
+            2. If the description mentions an application fee or entry fee, write ONLY "Fee" in the description field. Do not write anything other than "Fee" in the description field.
             3. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country" as applicable. If there is no state, leave it out. If you can't find a definite location, write "None".
             4. Using less than 12 words, can you generate a title for this opportunity based on it's description? The title should read like a professional job listing. Include the name of the organization or person who posted the opportunity if possible.
 
@@ -160,7 +160,7 @@ def scrape():
                 content = completion_text['message']['content']
                 json_result = json.loads(content)
                 
-                if json_result['description'] == 'Fee':
+                if json_result['description'] == 'Fee' or json_result['description'].endswith('Fee') or json_result['description'].startswith('Fee'):
                     fee += 1
                     continue
 

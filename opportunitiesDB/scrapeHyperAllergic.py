@@ -7,7 +7,7 @@ from reports.models import Reports
 
 def scrape():
     PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
-            1. Extract the description. If the description mentions an application fee or entry fee, replace the description with "Fee".
+            1. Extract the description. If the description mentions an application fee or entry fee, write ONLY "Fee" in the description field. Do not write anything other than "Fee" in the description field.
             2. Extract the deadline date in the format MM/DD/YYYY. If there is no deadline listed, set the date to the last day of the current month.
             3. Extract the title of the opportunity and save it in the "original_title" field.
             3. Extract the hyperlink linking to additional information.
@@ -75,7 +75,7 @@ def scrape():
 
             description = json_result['description']
 
-            if description == 'Fee':
+            if description == 'Fee' or description.endswith('Fee') or description.startswith('Fee'):
                 fee += 1
                 continue
             elif len(description) < 40:
