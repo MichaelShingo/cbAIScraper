@@ -1,15 +1,11 @@
 
+- check "link" field for duplicates
 - Can you make the search function more refined ( why does searaching composer and composition how things that have nothing to do with it)?
 
 - Add extra field to report database  for most recent error message.
 
 - Duplicates when AI finds different dates Ucross Residency - https://creative-capital.org/2023/06/28/artist-opportunities-july-and-august-2023/  - what if you just check the title from now on? But archive opporutnities every month so you can get the same opp again with a different deadline? 
 	 - it should be fine because wix importData() function checks only AI title duplicates. And it does archiving on its end.
-
-- still have issue where location comes out as none, can you just run the location editing script on all the of them? ACTUALLY THIS SEEMS OK NOW
-
-"London, None, United Kingdom",
-"London, None"
 
 Or what if you ask GPT to add "FEE" to anything that mentions appliaction fee. Then catch that? 
 
@@ -22,3 +18,7 @@ Maybe don't go as far in composer site opps, because they're either repeated or 
 
 Some locations come with no comma - New York City, New York United States
 Asian arts Alliance
+
+ADmin Login:
+mcraw
+#m0n0AWARE or something 

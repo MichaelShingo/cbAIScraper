@@ -13,4 +13,5 @@ urlpatterns = [
     path('thismonth/', views.opps_list_month_view),
     path('formatLocation/', views.format_location_view),
     path('generateTitles/', views.generate_titles_view),
+    path('getToday/', views.list_today_view),
 ]

@@ -56,6 +56,23 @@ class ActiveOppsListCreateAPIView(APIView):
 
 opps_list_create_view = ActiveOppsListCreateAPIView.as_view()
 
+class ListTodayAPIView(APIView):
+    def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
+
+        if isinstance(request.user, AnonymousUser):
+            status_code = status.HTTP_403_FORBIDDEN # 401 must include WWW-Authenticate header with instructions on how to authenticate
+            return Response({'content': 'Forbidden'}, status=status_code)
+        today = datetime(2023, 8, 7) #datetime.now()
+        queryset = ActiveOpps.objects.filter(createdAt__day=today.day, createdAt__month=today.month, createdAt__year=today.year)
+        serializer = ActiveOppsSerializer(queryset, many=True)
+        status_code = status.HTTP_200_OK
+
+        return Response(serializer.data, status=status_code)
+
+list_today_view = ListTodayAPIView.as_view()
+
 class ActiveOppsListMonthAPIView(APIView):
     def get(self, request):
         authentication_classes = [TokenAuthentication]
@@ -157,7 +174,8 @@ class FormatLocationAPIView(APIView):
     def get(self, request):
         authentication_classes = [TokenAuthentication]
         permission_classes = [IsAuthenticated]
-        queryset = ActiveOpps.objects.all()
+        today = datetime.now()
+        queryset = ActiveOpps.objects.filter(createdAt__day=today.day, createdAt__month=today.month, createdAt__year=today.year)
         for obj in queryset:
             print(obj.location)
             obj.location = formatLocation(obj.location)
