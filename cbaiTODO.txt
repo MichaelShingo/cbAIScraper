@@ -1,13 +1,57 @@
+CBYellow: #ffde59
+customizable loading gif source: https://loading.io
 
-- check "link" field for duplicates
+Database New features 
+- search auto-suggest  https://www.youtube.com/watch?v=TCLd5GIKlpA
+Map
+- heart icon looks cut off by container 
+- !!!!! can you indicate which opps are saved on the map????
+	- every time you save or delete an opp, send a message to the HTML to update corresponding feature. 
+	- get the marker object based on the ID of the feature. 
+	- marker.setStyle({
+    icon: newIcon,
+	
+	- can you use the let lst = [] as global variable, it's all the features. 
+    // Other options you want to update...
+	- what if you add all markers to a list in the beginning and you can get them based on the id of the opp? 
+});
+- philadelphia opp shows in allentown 
+
+
+Next Major Map Update
+ - when its grouping them together when your zoomed out, it feels like if I click that it should highlight a region and the pop up description on the side should display a list of all those opportunities, and any given opportunity would be highlighted if I hovered or clicked on the description in the list. And that you would be able to click on them individual also, the way it works now.
+
+
+Overall improvements 
+- - main database should have loading gif 
+- main database save and delete code should be cleaned up. 
+- can you improve opp deletion time usings filtering? (in saved pieces) 
+- disable button while saving to database, then enable when done. 
+
+
+- user-submitted opportunities, can you get coordinates for those using a backend hook? In general can you use a hook to handle coordinate adding? 
+
+Minnesota opportunity is too long 
+
+
+
+beverly hills, san francisco, cincinatti missing 
+- what if you put opp map on opp page and feed it whatever the filtered data is from the database? 
+- can you do location addition while you importData from API? 
+
+
+
+
+
+
+
+
+
+
+
 - Can you make the search function more refined ( why does searaching composer and composition how things that have nothing to do with it)?
 
-- Add extra field to report database  for most recent error message.
 
-- Duplicates when AI finds different dates Ucross Residency - https://creative-capital.org/2023/06/28/artist-opportunities-july-and-august-2023/  - what if you just check the title from now on? But archive opporutnities every month so you can get the same opp again with a different deadline? 
-	 - it should be fine because wix importData() function checks only AI title duplicates. And it does archiving on its end.
-
-Or what if you ask GPT to add "FEE" to anything that mentions appliaction fee. Then catch that? 
 
 SEVEARL OPPS WITH FEES SLIP THROUGH
 Music Engraving & Editing Service - Stanley M. Hoffman - can you exclude this all the time? (list of banned opportunities)
@@ -22,3 +66,70 @@ Asian arts Alliance
 ADmin Login:
 mcraw
 #m0n0AWARE or something 
+
+
+
+
+import { fetch } from 'wix-fetch';
+import wixData from 'wix-data';
+import wixSecretsBackend from 'wix-secrets-backend';
+
+const DATABASE_ID = 'testOpportunities';
+
+export async function locationToCoordinates() {
+    const forbiddenLocations = new Set(['Online', 'None', 'International']);
+    const USERNAME = await wixSecretsBackend.getSecret('GEONAMES_USER');
+
+    const formatLocation = (location) => {
+        let res = '';
+        try {
+            if (location === 'USA') {
+                res = 'United States';
+            }
+            res = location.replace(/ /g, '%20');
+            res = res.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            console.log(`formattedLocation = ${res}`)
+        } catch {
+            console.log('error in formatLocation');
+        }
+        
+        return res;
+    }
+    const query = await wixData.query(DATABASE_ID).limit(1000).find();
+    console.log(`querylength = ${query.items.length}`);
+    const items = query.items;
+    for (let item of items) {
+        console.log(item.location);
+        if (forbiddenLocations.has(item.location)) {
+            continue
+        } else {
+            try {
+                let formattedLocation = formatLocation(item.location);
+                console.log(formattedLocation);
+                const url = `http://api.geonames.org/postalCodeSearchJSON?placename=${formattedLocation}&username=${USERNAME}`;
+                const response = await fetch(url);
+                const json = await response.json();
+                if (json.postalCodes.length === 0) {
+                    continue
+                }
+                const firstObject = json.postalCodes[0];
+                console.log(firstObject);
+                console.log(firstObject.lat, firstObject.lng);
+                item.lat = firstObject.lat.toFixed(7);
+                item.lng = firstObject.lng.toFixed(7);
+
+                // check if lat/lng already exist
+                
+
+            } catch {
+                continue;
+            }
+            
+        }
+        
+        
+        const updateResult = await wixData.update(DATABASE_ID, item);
+        console.log('updated')
+        
+    }
+}

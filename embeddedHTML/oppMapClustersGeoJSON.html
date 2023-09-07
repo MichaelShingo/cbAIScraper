@@ -1,0 +1,151 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+   integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+   crossorigin=""/>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+ integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+ crossorigin=""></script>
+
+
+ <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/"></script>
+ <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+ <style>
+    #map { height: 100%; }
+   </style>
+
+ <div id="map"></div>
+
+
+
+<script>
+    
+    // map styles
+    const markerOptions = {
+        radius: 8,
+        fillColor: 'yellow',
+        color: '#000',
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    }
+    //initialize map
+    var map = L.map('map').setView([40.7340210, -73.9903400], 6);
+
+    // set tile layer
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    function markerClick(e) {
+        window.parent.postMessage({ 'lat': e.latlng.lat, 'lng': e.latlng.lng, 'oppID': e.layer.feature.properties.oppID }, 'https://www.forthelostcreative.com');
+    }
+
+    window.onmessage = (event) => {
+        if (event.data) {
+            locations = event.data.markers;
+        }
+
+
+        // create list of geoJSON data
+        let lst = [];
+        for (let i = 0; i < locations.length; i++) {
+            let curObj = {
+                "type": "Feature",
+                "properties": {
+                    oppID: 'emptyStr'
+                },
+                "geometry": {
+                    "coordinates": [],
+                    "type": "Point"
+                }   
+            };
+            curObj.geometry.coordinates = [parseFloat(locations[i].position.lng), parseFloat(locations[i].position.lat)];
+            curObj.properties.oppID = locations[i].id.toString();
+            lst.push(curObj);
+            window.parent.postMessage(curObj, 'https://www.forthelostcreative.com');
+        }
+
+        // add list of objects to geoJSON data obj
+        const dataCustom = {
+            "type": "FeatureCollection",
+            "features": lst
+        }
+
+        const data = {
+            "type": "FeatureCollection",
+            "features": [
+            {
+                "type": "Feature",
+                "properties": {id: 5},
+                "geometry": {
+                "coordinates": [
+                    -71.08562387108852,
+                    42.35455003085522
+                ],
+                "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {id: 6},
+                "geometry": {
+                    "coordinates": [
+                        -73.99933438230873,
+                        40.722208357904435
+                    ],
+                    "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "coordinates": [
+                        -75.16309449773675,
+                        39.973253527223875
+                    ],
+                "type": "Point"
+                }
+            },
+            {
+                "type": "Feature",
+                "properties": {id: 7},
+                "geometry": {
+                    "coordinates": [
+                        -77.03373112772135,
+                        38.89468490067679
+                    ],
+                    "type": "Point"
+                }
+            }
+            ]
+        };
+
+        // window.parent.postMessage(dataCustom, 'https://www.forthelostcreative.com');
+        // window.parent.postMessage(data, 'https://www.forthelostcreative.com');
+        
+        const markers = L.markerClusterGroup();
+
+        function onEachFeature(feature, layer) {
+            layer.on('click', function(e) {
+                window.parent.postMessage({ 'lat': e.latlng.lat, 'lng': e.latlng.lng, 'oppID': feature.properties.id}, 'https://www.forthelostcreative.com');
+
+            })
+        }
+
+        L.geoJSON(dataCustom, {
+            pointToLayer: function (feature, latlng){
+                return markers.addLayer(L.circleMarker(latlng, markerOptions))
+            },
+            onEachFeature: onEachFeature
+        }).addTo(map);
+        map.addLayer(markers);
+    }
+
+</script>
