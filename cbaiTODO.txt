@@ -1,44 +1,81 @@
 CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
+- clean up scraping code
+- map page should reload when user logs in via login button.
+- add filtering to maps page. Maybe this should be separate from the databae page.
+
+Database page tests
+1. User is not logged in.
+2. Logged in but has never saved an opportunity.
+3. Logged in and has saved an opportunity.
+- See saved opps button on repeater works 
+- deleting opps works 
+- See saved opps button at top works 
+- Saved opps are marked across all pages of repeater.
+- Lightbox shows up for ONLY unauthenticated users. 
+- Lightbox "Create Account" button works 
+- search by text works 
+- filtering by type of opportunity works 
+- Check everything on the mobile site! If issues, it's probably an element that's hidden with GUI that is also being selected in the code.
+
+Clean up Database page
+- can you do instant search on change? 
+- and button to clear filters?  
+- disable button while saving to database, then enable when done. 
+
+Cases:
+1. good - User has never saved an opp 
+2. good - User has saved opps, but currently has nothing saved 
+3. good - but tab activity slow - Active opp is saved, but archived is not 
+4. good - Archived opp is saved, but active is not
+5. good but slow tab activity - both types of opps are saved 
+6. good - You delete active opps until there are none 
+7. good - You delete archived opps until there are none
+8. good - You delete all opps until there are none 
+
+ 
+archived samples:  "128173b2-37ac-4ede-9460-e7c6b9b329c2","08ca18bc-dc6f-433f-8918-d395f3529411", "ccae931f-b59a-4255-b718-8ac3e2b8207a"
+
+- read more button is there even when there is not more to read, may be unavoidable with wix's implementation of collaposible text combined with dynamic texts. 
+
 Database New features 
 - search auto-suggest  https://www.youtube.com/watch?v=TCLd5GIKlpA
-Map
-- heart icon looks cut off by container 
-- !!!!! can you indicate which opps are saved on the map????
-	- every time you save or delete an opp, send a message to the HTML to update corresponding feature. 
-	- get the marker object based on the ID of the feature. 
-	- marker.setStyle({
-    icon: newIcon,
-	
-	- can you use the let lst = [] as global variable, it's all the features. 
-    // Other options you want to update...
-	- what if you add all markers to a list in the beginning and you can get them based on the id of the opp? 
-});
-- philadelphia opp shows in allentown 
 
+- WHEN YOU REFRESH MY OPPS - page is unresponsive until this console log: utils.js:11 react-i18next:: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour.
+
+- Let users indicate if they've applied or not 
+	- you can do this with existing data structure if you add another field in the database 
+	- it contains an array of booleans that correspond to each opportunity 
+- let users flag an opp that is not free 
+- when you go too fast on the main database page, it doesn't save stuff sometimes 
+	- it's because it's not waiting for the previous one to finish? 
+	- can you make the cursor pointer on hover heart? 
+	- saved 
+	
+	
+Additional scraping
+- https://pickuptheflow.org - images 
+- https://www.sphinxmusic.org/job-postings !!!!! doable now 
+- League of American Orchestras - https://jobs.americanorchestras.org/jobs/19116133/annual-giving-coordinator
+
+
+Map
+
+- automatically add coordinates when opps are imported, 
+- can the map display roman charcters for all countries? 
+- amsterday, The Netherlands does not register 
+- UX near the edges of the map are weird 
 
 Next Major Map Update
  - when its grouping them together when your zoomed out, it feels like if I click that it should highlight a region and the pop up description on the side should display a list of all those opportunities, and any given opportunity would be highlighted if I hovered or clicked on the description in the list. And that you would be able to click on them individual also, the way it works now.
 
 
-Overall improvements 
-- - main database should have loading gif 
-- main database save and delete code should be cleaned up. 
-- can you improve opp deletion time usings filtering? (in saved pieces) 
-- disable button while saving to database, then enable when done. 
-
-
 - user-submitted opportunities, can you get coordinates for those using a backend hook? In general can you use a hook to handle coordinate adding? 
-
-Minnesota opportunity is too long 
-
 
 
 beverly hills, san francisco, cincinatti missing 
 - what if you put opp map on opp page and feed it whatever the filtered data is from the database? 
-- can you do location addition while you importData from API? 
-
 
 
 
@@ -132,4 +169,70 @@ export async function locationToCoordinates() {
         console.log('updated')
         
     }
+}
+
+
+
+
+
+// const prefetchRes = wixSiteFrontend.prefetchPageResources( {
+    //     "pages": ['account/my-opportunities']
+    // } );
+	
+	
+	
+	
+	wixData.query(USER_OPPORTUNITIES)
+                        .eq("memberID", currentUserID)
+                        .find()
+                        .then((results) => {
+                            let opportunityArray = results.items[0].opportunityIDs;
+                            let removeIndex = opportunityArray.indexOf(itemData._id);
+                            if (results.items.length > 0 && removeIndex > -1){                                  
+                                opportunityArray.splice(removeIndex, 1);
+                                let currentDatabaseID = results.items[0]._id;
+                                wixData.get(USER_OPPORTUNITIES, currentDatabaseID)
+                                    .then((item) => {
+                                        let toUpdate = item;
+                                        toUpdate.opportunityIDs = opportunityArray;
+                                        wixData.update(USER_OPPORTUNITIES, toUpdate)
+                                            .then((results) => {
+                                                
+                                            })
+                                            .catch((err) => {
+                                                console.log(err);
+                                            });
+                                    });
+                            }
+                        });
+						
+					
+
+
+
+
+					
+						
+						
+					debounceTimer set Time out 
+					
+					   //$w("#dataset1").setFilter(wixData.filter().contains("title", $w('#searchBar').value)
+        //    .or(wixData.filter().contains("notes", $w('#searchBar').value)).ge("dueDate", today)).then(() => {
+        //    count();
+        //})
+		
+		
+		
+		
+		
+		
+		
+	const runSearch = () => {
+    let word = $w("#searchBar").value;
+    local.setItem("searchWord", word);
+    // wixLocation.to(`/hotelresultpage`);
+}
+
+export function vectorImage1_click(event) {
+    runSearch();
 }
