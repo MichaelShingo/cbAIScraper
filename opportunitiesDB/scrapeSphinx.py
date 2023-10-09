@@ -37,14 +37,20 @@ def scrape():
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
 
-    driver = webdriver.Remote(
-        command_executor='https://chrome.browserless.io/webdriver',
-        options=chrome_options
-    )
+    try:
+        driver = webdriver.Remote(
+            command_executor='https://chrome.browserless.io/webdriver',
+            options=chrome_options
+        )
 
-    driver.get("https://www.example.com")
-    print(driver.title)
-    driver.quit()
+        driver.get("https://www.example.com")
+        print(driver.title)
+        driver.quit()
+    except Exception as e:
+        print('exception')
+        return e
+
+    return 'succeeded'
 
 
 def scrapeOld():
