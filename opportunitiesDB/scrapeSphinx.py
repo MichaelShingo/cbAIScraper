@@ -10,7 +10,6 @@ from reports.models import Reports
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -29,6 +28,27 @@ def download_selenium():
 
 
 def scrape():
+    print('browserless!')
+    env = environ.Env()
+    environ.Env.read_env()
+    API_KEY = env('API_KEY_BROWSERLESS')
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.set_capability('browserless:token', API_KEY)
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--headless")
+
+    driver = webdriver.Remote(
+        command_executor='https://chrome.browserless.io/webdriver',
+        options=chrome_options
+    )
+
+    driver.get("https://www.example.com")
+    print(driver.title)
+    driver.quit()
+
+
+def scrapeOld():
+
     # driver = webdriver.Chrome()
     url = 'https://www.sphinxmusic.org/job-postings'
     # options = webdriver.ChromeOptions()
