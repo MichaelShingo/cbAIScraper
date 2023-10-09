@@ -33,15 +33,15 @@ def scrape():
     url = 'https://www.sphinxmusic.org/job-postings'
     # options = webdriver.ChromeOptions()
     # options.add_argument('--headless=new')
-    # driver = webdriver.Chrome(options=options, service=ChromeService(
-    #     ChromeDriverManager().install()))
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
-    driver = webdriver.Chrome(service=Service(
-        ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(options=chrome_options, service=ChromeService(
+        ChromeDriverManager().install()))
+    # driver = webdriver.Chrome(service=Service(
+    #     ChromeDriverManager().install()), options=chrome_options)
     driver.get(url)
 
     # title_elements = driver.find_elements(By.CLASS_NAME, 'table-cell-1')/
