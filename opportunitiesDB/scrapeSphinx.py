@@ -20,7 +20,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 def scrape():
     # driver = webdriver.Chrome()
     url = 'https://www.sphinxmusic.org/job-postings'
-    driver = webdriver.Chrome(service=ChromeService(
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless=new')
+    driver = webdriver.Chrome(options=options, service=ChromeService(
         ChromeDriverManager().install()))
     driver.get(url)
 
@@ -40,4 +42,5 @@ def scrape():
         link_element = element.find_element(By.TAG_NAME, 'a')
         print(link_element.get_attribute('href'))
 
+    driver.quit()
     return 'hi'
