@@ -1,15 +1,41 @@
 CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
+
+Each OpenAI request should not be more than 15,000 tokens of input. This means 60,000 characters.
+https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+
+
+Request too large for gpt-3.5-turbo in organization org-vltvOhATUvXfGo5TwlFgb2hb on tokens_usage_based per min: Limit 90000, Requested 101638. Visit https://platform.openai.com/account/rate-limits to learn more.
+
+
+
+
+SAVE POINT BEFORE EDITING PAGE CODE TO QUERY LOOKUPTABLE: 5:50PM 12/23
+
+3d25abba-0d15-4ed8-9284-472c2d5ffb47
+cf6ed65f-cd66-4236-bf22-943784cd37d3
+
+deadline issue on map
+
+Validate that your application works with the new database service
+The migration automatically replaces plugin variable references in your services.
+If you are connecting to the plugin externally or hard-coding the URL, you will need to update those references manually.
+*****Delete the legacy plugin
+
+Automated deadline email functionality.
+	monthly, an email is triggered for all members with saved opportunities
+	it includes upcoming deadlines (within the coming month?)
+	And ideally a list of recently added opportunities.
+
+
 ADmin Login:
 mcraw
 m0n0AWARE or something 
 
 !!!! Some of the longer links are getting cut off as "...."
 	IT'S COMPOSERS SITE PROBLEM - FIX ITTTTT
-Data hook
-	Submit opportunity page does not catch if the checkboxes are not filled out.
-	See if it can add keywords too
+
 	
 Auto-complete
 	- Does not clear expired opps 

@@ -1,9 +1,13 @@
-import requests, environ, openai, json
+import requests
+import environ
+import openai
+import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
 from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle
 from reports.models import Reports
+
 
 def scrape():
     PROMPT = '''In the text below, I will provide a description of an opportunity. Based the description, do these 5 things? 
@@ -17,10 +21,11 @@ def scrape():
             {"keywords":"keyword1,keyword2,keyword3","summary":"summary_text","location":"city, full_state_name, country","relevant_words":"word1,word2,word3","title":"title - organization_name"}
             '''
     OPP_LINK = 'http://live-composers.pantheonsite.io'
-    PAGE_LINK = 'http://live-composers.pantheonsite.io/opps/results/taxonomy%3A13?page=' #pages start from 0
+    # pages start from 0
+    PAGE_LINK = 'http://live-composers.pantheonsite.io/opps/results/taxonomy%3A13?page='
     NONE = 'None'
 
-    #OPENAI SETUP
+    # OPENAI SETUP
     env = environ.Env()
     environ.Env.read_env()
     API_KEY = env('AI_KEY')
@@ -28,14 +33,15 @@ def scrape():
 
     title = ''
     deadline = None
-    location = '' 
+    location = ''
     description = ''
     website = ''
     deadlineString = ''
     errorMessage = 'None'
 
-    #SCRAPING ---------------------------------------------------------
-    r = requests.get('http://live-composers.pantheonsite.io/opps/results/taxonomy%3A13')
+    # SCRAPING ---------------------------------------------------------
+    r = requests.get(
+        'http://live-composers.pantheonsite.io/opps/results/taxonomy%3A13')
     soup = BeautifulSoup(r.content, 'html.parser')
     opportunityRows = soup.select('.views-row .field-content a')
     oppLinks = [row['href'] for row in opportunityRows]
@@ -43,7 +49,7 @@ def scrape():
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
 
-    for i in range(int(maxPage)): #loops through all pages except last one (low quality opps)
+    for i in range(int(maxPage)):  # loops through all pages except last one (low quality opps)
         # if i == 1: # REMOVE THIS IN FINAL VERSION
         #     break
         pageR = requests.get(PAGE_LINK + str(i))
@@ -51,33 +57,41 @@ def scrape():
         opportunityRows = soup.select('.views-row .field-content a')
         oppLinks = [row['href'] for row in opportunityRows]
         # k = 0 # FOR TESTING ONLY
-        for oppLink in oppLinks: #loops through all opportunities on each page
+        for oppLink in oppLinks:  # loops through all opportunities on each page
             # k += 1 # FOR TESTING ONLY
             # if k == 3: # FOR TESTING ONLY
-                # break
+            # break
             try:
                 oppR = requests.get(OPP_LINK + oppLink)
                 oppSoup = BeautifulSoup(oppR.content, 'html.parser')
-                title = oppSoup.select('.views-field-title .field-content')[0].contents[0] if oppSoup.select('.views-field-title .field-content') else NONE
-                descriptionTags = oppSoup.select('p') if oppSoup.select('p') else '' #TODO extra spaces are present here 
+                title = oppSoup.select('.views-field-title .field-content')[
+                    0].contents[0] if oppSoup.select('.views-field-title .field-content') else NONE
+                descriptionTags = oppSoup.select('p') if oppSoup.select(
+                    'p') else ''  # TODO extra spaces are present here
                 descriptionList = []
 
                 for tag in descriptionTags:
-                    for element in tag.contents: 
+                    for element in tag.contents:
                         descriptionList.append(tagToStr(element))
 
                 descriptionList.pop()
                 description = '\n\n'.join(descriptionList)
-                deadline = oppSoup.select('.date-display-single')[0].contents[0] if oppSoup.select('.date-display-single') else NONE
+                deadline = oppSoup.select(
+                    '.date-display-single')[0].contents[0] if oppSoup.select('.date-display-single') else NONE
 
-                if not deadline == NONE: # Dates must be YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format
+                # Dates must be YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format
+                if not deadline == NONE:
                     deadline += ' 23:59'
                     deadline = datetime.strptime(deadline, '%d %b %Y %H:%M')
-                    deadlineDate = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
+                    deadlineDate = datetime.strftime(
+                        deadline, '%Y-%m-%d %H:%M:59Z')
                     deadlineString = datetime.strftime(deadline, '%B %d, %Y')
 
-                website = oppSoup.select('.views-field-field-opp-url-url a')[0].contents[0] if oppSoup.select('.views-field-field-opp-url-url a') else OPP_LINK + oppLink
-                
+                website = oppSoup.select('.views-field-field-opp-url-url a')[0].attrs['href'] if oppSoup.select(
+                    '.views-field-field-opp-url-url a') else OPP_LINK + oppLink
+
+                print(website)
+
                 # CHECK IF TITLE / DEADLINE IS ALREADY IN DATABASE, if True, continue
                 if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
                     sameEntryCount += 1
@@ -88,19 +102,22 @@ def scrape():
                 response = openai.ChatCompletion.create(
                     model='gpt-3.5-turbo',
                     messages=[
-                        {'role': 'user', 'content': PROMPT + '###' + title + '. ' + description},
+                        {'role': 'user', 'content': PROMPT +
+                            '###' + title + '. ' + description},
                     ]
                 )
-        
-                completion_text = json.loads(str(response.choices[0])) # returns DICT
+
+                completion_text = json.loads(
+                    str(response.choices[0]))  # returns DICT
                 content = completion_text['message']['content']
                 json_result = json.loads(content)
                 location = json_result['location'] if json_result['location'] != 'None' else 'Online'
                 for l in range(2):
                     location = formatLocation(location)
                 # oppTypeList = (json_result['relevant_words']).split(', ') # GPT does not do well with finding oppTypes
-                oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
-                
+                # Uses regular search function
+                oppTypeList = findOppTypeTags(description.lower())
+
                 if json_result['summary'] == 'Fee' or json_result['summary'].endswith('Fee') or json_result['summary'].startswith('Fee'):
                     fee += 1
                     continue
@@ -112,22 +129,22 @@ def scrape():
 
                 titleAI = json_result['title']
                 titleAI = formatTitle(titleAI)
-                    
+
                 if json_result['keywords'].find(', ') != -1:
                     keywordsList = json_result['keywords'].split(', ')
                 else:
                     keywordsList = json_result['keywords'].split(',')
                 composerKeywords = ['composer', 'composition', 'new music']
                 keywordsList.extend(composerKeywords)
-                
+
                 # CREATE A ACTIVEOPPS Model instance and save it to the database
                 newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,
-                            location=location, description=description, link=website, deadlineString=deadlineString,
-                            typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Composers Site')
+                                      location=location, description=description, link=website, deadlineString=deadlineString,
+                                      typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='Composers Site')
                 newModel.save()
                 successCount += 1
                 print('Added ' + titleAI)
-                    
+
             except Exception as e:
                 failCount += 1
                 print('An entry failed to be added.', str(e))

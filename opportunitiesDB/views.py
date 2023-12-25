@@ -12,6 +12,7 @@ from . import (scrapeAsianArts,
                scrapeHyperAllergic,
                scrapeComposersSite,
                scrapeCreativeCapital,
+               scrapeArtworkArchive,
                scrapeCreativeCapitalAI,
                scrapeSphinx,
                generateTitles)
@@ -135,6 +136,21 @@ class DeleteAPIView(APIView):
 
 
 delete_view = DeleteAPIView.as_view()
+
+
+class ArtworkArchiveScrapeAPIView(APIView):
+    def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
+        message = scrapeArtworkArchive.scrape()
+        data = {'message': message,
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+
+        return Response(data, status=status_code)
+
+
+artwork_archive_scrape_view = ArtworkArchiveScrapeAPIView.as_view()
 
 
 class SphinxScrapeAPIView(APIView):

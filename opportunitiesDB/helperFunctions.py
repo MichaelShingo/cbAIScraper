@@ -1,8 +1,11 @@
 from .tagLists import typeOfOpportunity, partTime, fullTime
 from . import tagLists
 import string
+from .models import ActiveOpps
+from datetime import datetime
 
-def tagToStr(tag): #recursive function that converts tag and its contents to string, including all nested tags
+
+def tagToStr(tag):  # recursive function that converts tag and its contents to string, including all nested tags
     if isinstance(tag, str):
         return tag
     else:
@@ -11,11 +14,22 @@ def tagToStr(tag): #recursive function that converts tag and its contents to str
         else:
             return ''
 
-def formatTitle(title:str):
-    res = title.replace(' - None', '')
-    return res 
 
-def formatLocation(location:str):
+def formatTitle(title: str):
+    res = title.replace(' - None', '')
+    return res
+
+
+def formatDjangoDateString(datetimeObj):
+    return datetime.strftime(
+        datetimeObj, '%Y-%m-%d %H:%M:59Z')
+
+
+def formatDatabaseDateString(datetimeObj):
+    return datetime.strftime(datetimeObj, '%B %d, %Y')
+
+
+def formatLocation(location: str):
     res = location
     if location == 'None':
         res = 'Online'
@@ -27,8 +41,10 @@ def formatLocation(location:str):
         res = location[:-4] + ' United States'
     res = res.replace(' None,', '')
     return res
-        
-def findOppTypeTags(descriptionLower):
+
+
+def findOppTypeTags(description):
+    descriptionLower = description.lower()
     result = []
     for type in typeOfOpportunity:
         if descriptionLower.find(type) >= 0:
@@ -44,5 +60,27 @@ def findOppTypeTags(descriptionLower):
                 result.append(string.capwords(type))
     if len(result) == 0:
         result.append('Other')
-        
+
     return result
+
+
+def checkDuplicate(title, deadlineDate):
+    if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
+        print(f'title {title} already exists in database')
+        return True
+
+
+def printChars(output_string):
+    for char in output_string:
+        if char.isspace():
+            print(f"Whitespace character: {repr(char)}")
+        elif char == '\n':
+            print("Newline character")
+        elif char == '\t':
+            print("Tab character")
+        elif char == '\r':
+            print("Carriage return character")
+        elif char == '\f':
+            print("Form feed character")
+        else:
+            print(f"Other character: {repr(char)}")
