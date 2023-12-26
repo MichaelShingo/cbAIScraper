@@ -15,6 +15,7 @@ from . import (scrapeAsianArts,
                scrapeArtworkArchive,
                scrapeCreativeCapitalAI,
                scrapeSphinx,
+               scrapeACF,
                generateTitles)
 
 
@@ -151,6 +152,21 @@ class ArtworkArchiveScrapeAPIView(APIView):
 
 
 artwork_archive_scrape_view = ArtworkArchiveScrapeAPIView.as_view()
+
+
+class ACFScrapeAPIView(APIView):
+    def get(self, request):
+        authentication_classes = [TokenAuthentication]
+        permission_classes = [IsAuthenticated]
+        message = scrapeACF.scrape()
+        data = {'message': message,
+                'status': 'success'}
+        status_code = status.HTTP_202_ACCEPTED
+
+        return Response(data, status=status_code)
+
+
+acf_scrape_view = ACFScrapeAPIView.as_view()
 
 
 class SphinxScrapeAPIView(APIView):

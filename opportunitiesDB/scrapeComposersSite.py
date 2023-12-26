@@ -5,7 +5,7 @@ import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle
+from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle, addComposerKeywords
 from reports.models import Reports
 
 
@@ -135,7 +135,7 @@ def scrape():
                 else:
                     keywordsList = json_result['keywords'].split(',')
                 composerKeywords = ['composer', 'composition', 'new music']
-                keywordsList.extend(composerKeywords)
+                keywordsList = addComposerKeywords(keywordsList)
 
                 # CREATE A ACTIVEOPPS Model instance and save it to the database
                 newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,

@@ -19,3 +19,7 @@ RESULT = '{"original_title":"title","aititle":"title - organization_name","descr
 DESCRIPTION_FREE = 'Extract the description of the opportunity. If the description is greater than 150 words, summarize it using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable.'
 
 PROVIDE_ALL_TEXT = 'In the text below, I will provide all of the text contained on a webpage about an artist opportunity. Based on this, can you do the following?'
+
+PROVIDE_OPP_DETAILS = 'In the text below, I will provide the description of an opportunity for artists. Based on this, can you do the following?'
+
+SUMMARIZE = 'Summarize the given text using a minimum of 100 words and a maximum of 150 words. Include important requirements and any compensation as applicable. Add this to the description field in the result.'

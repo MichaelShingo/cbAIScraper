@@ -12,6 +12,7 @@ urlpatterns = [
     path('scrapeHyper/', views.hyper_scrape_view),
     path('scrapeArtworkArchive/', views.artwork_archive_scrape_view),
     path('scrapeSphinx/', views.sphinx_scrape_view),
+    path('scrapeACF/', views.acf_scrape_view),
     path('thismonth/', views.opps_list_month_view),
     path('formatLocation/', views.format_location_view),
     path('generateTitles/', views.generate_titles_view),

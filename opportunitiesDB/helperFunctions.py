@@ -3,6 +3,8 @@ from . import tagLists
 import string
 from .models import ActiveOpps
 from datetime import datetime
+import environ
+import requests
 
 
 def tagToStr(tag):  # recursive function that converts tag and its contents to string, including all nested tags
@@ -84,3 +86,22 @@ def printChars(output_string):
             print("Form feed character")
         else:
             print(f"Other character: {repr(char)}")
+
+
+def getWithScrapeOps(link):
+    env = environ.Env()
+    environ.Env.read_env()
+    API_KEY_SCRAPEOPS = env('API_KEY_SCRAPEOPS')
+    r = requests.get(
+        url='https://proxy.scrapeops.io/v1/',
+        params={
+            'api_key': API_KEY_SCRAPEOPS,
+            'url': link,
+        })
+    return r
+
+
+def addComposerKeywords(keywordList):
+    composerKeywords = ['composer', 'composition', 'new music']
+    keywordList.extend(composerKeywords)
+    return keywordList
