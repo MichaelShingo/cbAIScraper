@@ -2,6 +2,12 @@ CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
 
+Additional scraping
+- https://www.musicalchairs.info/marketing-and-sales/jobs
+- https://pickuptheflow.org - links to other websites (now possible
+- League of American Orchestras - requires login https://jobs.americanorchestras.org/jobs/19116133/annual-giving-coordinator
+
+
 Each OpenAI request should not be more than 15,000 tokens of input. This means 60,000 characters.
 https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
 
@@ -93,15 +99,9 @@ Database New features
 - WHEN YOU REFRESH MY OPPS - page is unresponsive until this console log: utils.js:11 react-i18next:: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour.
 
 - Let users indicate if they've applied or not 
-	- you can do this with existing data structure if you add another field in the database 
-	- it contains an array of booleans that correspond to each opportunity 
 - let users flag an opp that is not free 
 	
 	
-Additional scraping
-- https://pickuptheflow.org - images 
-- https://www.sphinxmusic.org/job-postings !!!!! doable now 
-- League of American Orchestras - https://jobs.americanorchestras.org/jobs/19116133/annual-giving-coordinator
 
 
 Map
@@ -113,8 +113,6 @@ Map
 Next Major Map Update
  - when its grouping them together when your zoomed out, it feels like if I click that it should highlight a region and the pop up description on the side should display a list of all those opportunities, and any given opportunity would be highlighted if I hovered or clicked on the description in the list. And that you would be able to click on them individual also, the way it works now.
 
-
-- user-submitted opportunities, can you get coordinates for those using a backend hook? In general can you use a hook to handle coordinate adding? 
 
 
 beverly hills, san francisco, cincinatti missing 

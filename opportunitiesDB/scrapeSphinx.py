@@ -98,7 +98,7 @@ def scrape():
             r = requests.get(website)  # replace with selenium?
             soup = BeautifulSoup(r.content, 'html.parser')
             text = soup.get_text(separator=' ')
-            title = opp['title'] + ' - ' + opp['organization']
+            title = opp['title']
             deadlineDateObj = datetime.strptime(
                 opp['deadline'] + ' 23:59', '%m/%d/%y %H:%M')
             deadline = formatDjangoDateString(deadlineDateObj)
@@ -113,7 +113,7 @@ def scrape():
                 continue
 
             json_result = getGPTResponse(
-                f'{PROMPT} ### Title and Organization: {title} ### {text[:4000]}')
+                f'{PROMPT} ### Title and Organization: {title} - {opp["organization"]} ### {text[:4000]}')
             description = json_result['description']
             if description.lower() == 'none':
                 print(title, 'There is a problem with the page.')
