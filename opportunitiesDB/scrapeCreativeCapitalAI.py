@@ -37,8 +37,13 @@ def scrape():
         prevMonthNum = datetime.strftime(today - timedelta(days=15), '%m')
         nextMonthStr = datetime.strftime(today + timedelta(days=32), '%B')
         year = datetime.strftime(today, '%Y')
-        for day in range(20, 32):
-            urlVersion = f'https://creative-capital.org/{year}/{prevMonthNum}/{day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'
+        prevYear = datetime.strftime(today, '%Y')
+        if prevMonthNum == '12':
+            prevYear = datetime.strftime(today - timedelta(days=15), '%Y')
+
+        for day in range(19, 32):
+            urlVersion = f'https://creative-capital.org/{prevYear}/{prevMonthNum}/{day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'
+            print(urlVersion)
             r = requests.get(
                 url='https://proxy.scrapeops.io/v1/',
                 params={

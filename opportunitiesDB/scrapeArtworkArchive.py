@@ -45,9 +45,10 @@ def scrape():
                 for listElement in listElements:
                     if 'Submission Deadline' in listElement.text:
                         deadlineContent = listElement.text[21:]
-                        if deadlineContent == 'Ongoing':
+                        if deadlineContent != 'Ongoing':
                             deadlineString = deadlineContent
                 deadlineString = deadlineString.strip('\n')
+                # deadlineString is always December 31??????
                 deadlineString += ' 23:59'
 
                 date_object = datetime.strptime(
@@ -56,7 +57,7 @@ def scrape():
                 # Dates must be YYYY-MM-DD HH:MM[:ss[.uuuuuu]][TZ] format
                 deadlineDate = datetime.strftime(
                     date_object, '%Y-%m-%d %H:%M:59Z')
-
+                print(deadlineDate)
                 if checkDuplicate(title, deadlineDate):
                     sameEntryCount += 1
                     continue

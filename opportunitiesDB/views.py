@@ -11,7 +11,6 @@ from django.contrib.auth.models import AnonymousUser
 from . import (scrapeAsianArts,
                scrapeHyperAllergic,
                scrapeComposersSite,
-               scrapeCreativeCapital,
                scrapeArtworkArchive,
                scrapeCreativeCapitalAI,
                scrapeSphinx,
@@ -71,11 +70,11 @@ class ListTodayAPIView(APIView):
         authentication_classes = [TokenAuthentication]
         permission_classes = [IsAuthenticated]
 
-        if isinstance(request.user, AnonymousUser):
-            # 401 must include WWW-Authenticate header with instructions on how to authenticate
-            status_code = status.HTTP_403_FORBIDDEN
-            return Response({'content': 'Forbidden'}, status=status_code)
-        today = datetime(2023, 8, 7)  # datetime.now()
+        # if isinstance(request.user, AnonymousUser):
+        #     # 401 must include WWW-Authenticate header with instructions on how to authenticate
+        #     status_code = status.HTTP_403_FORBIDDEN
+        #     return Response({'content': 'Forbidden'}, status=status_code)
+        today = datetime.now()
         queryset = ActiveOpps.objects.filter(
             createdAt__day=today.day, createdAt__month=today.month, createdAt__year=today.year)
         serializer = ActiveOppsSerializer(queryset, many=True)

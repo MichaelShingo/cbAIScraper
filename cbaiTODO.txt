@@ -1,19 +1,13 @@
 CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
+- There are opps being marked December 31 of current year which actually have a much earlier deadline.
+- read more button is there even when there is not more to read, may be unavoidable with wix's implementation of collaposible text combined with dynamic texts. 
 
 Additional scraping
-- https://www.musicalchairs.info/marketing-and-sales/jobs
-- https://pickuptheflow.org - links to other websites (now possible
+- https://www.musicalchairs.info/marketing-and-sales/jobs - is this the kind of opps you want??
+- https://pickuptheflow.org - links to other websites (now possible - mostly expired opps
 - League of American Orchestras - requires login https://jobs.americanorchestras.org/jobs/19116133/annual-giving-coordinator
-
-
-Each OpenAI request should not be more than 15,000 tokens of input. This means 60,000 characters.
-https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-
-
-Request too large for gpt-3.5-turbo in organization org-vltvOhATUvXfGo5TwlFgb2hb on tokens_usage_based per min: Limit 90000, Requested 101638. Visit https://platform.openai.com/account/rate-limits to learn more.
-
 
 
 
@@ -22,17 +16,17 @@ SAVE POINT BEFORE EDITING PAGE CODE TO QUERY LOOKUPTABLE: 5:50PM 12/23
 3d25abba-0d15-4ed8-9284-472c2d5ffb47
 cf6ed65f-cd66-4236-bf22-943784cd37d3
 
-deadline issue on map
+CREATIVE CAPITAL IS BROKEN 
+import which website opportunity came from....
+what if you import data based on which website you took opp from???
+database doesn't count opps on first load? 
+mobile design for monthly email? 
+- fix artwork archive because all deadlines are December 31st....
 
 Validate that your application works with the new database service
 The migration automatically replaces plugin variable references in your services.
 If you are connecting to the plugin externally or hard-coding the URL, you will need to update those references manually.
 *****Delete the legacy plugin
-
-Automated deadline email functionality.
-	monthly, an email is triggered for all members with saved opportunities
-	it includes upcoming deadlines (within the coming month?)
-	And ideally a list of recently added opportunities.
 
 
 ADmin Login:
@@ -93,7 +87,7 @@ Cases:
  
 archived samples:  "128173b2-37ac-4ede-9460-e7c6b9b329c2","08ca18bc-dc6f-433f-8918-d395f3529411", "ccae931f-b59a-4255-b718-8ac3e2b8207a"
 
-- read more button is there even when there is not more to read, may be unavoidable with wix's implementation of collaposible text combined with dynamic texts. 
+
 
 Database New features 
 - WHEN YOU REFRESH MY OPPS - page is unresponsive until this console log: utils.js:11 react-i18next:: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour.
@@ -117,11 +111,6 @@ Next Major Map Update
 
 beverly hills, san francisco, cincinatti missing 
 - what if you put opp map on opp page and feed it whatever the filtered data is from the database? 
-
-
-
-
-
 
 
 
