@@ -55,14 +55,17 @@ def scrape():
 
     driver.get(url)
     time.sleep(10)
-
+    data = []
     try:
+
         pagination_links = driver.find_elements(
             By.CLASS_NAME, 'pagination-item')
-        maxPage = int(pagination_links[-2].text)
 
-        data = []
+        maxPage = 1
+        if len(pagination_links) > 0:
+            maxPage = int(pagination_links[-2].text)
 
+        print('getting page elements, maxpage=', maxPage)
         for i in range(maxPage):
             print(i)
             title_elements = driver.find_elements(
@@ -86,6 +89,7 @@ def scrape():
                 print('clicked')
                 time.sleep(10)
     except Exception as e:
+        print('Exception:', e)
         driver.quit()
 
     driver.quit()

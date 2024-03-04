@@ -1,8 +1,20 @@
 CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
-- There are opps being marked December 31 of current year which actually have a much earlier deadline.
-- read more button is there even when there is not more to read, may be unavoidable with wix's implementation of collaposible text combined with dynamic texts. 
+- Disable submit button while submitting to prevent multiple. 
+- add num of people who applied to opp 
+- map detail container should be scrollable...but wix does not support this
+- toggle for online location
+- Can location be a filter instead of sort? Like within 10 miles of user location? 
+- auto suggest doesn't show on tap for mobile
+
+Recommended for you feature (separate page?) (or a checkbox on main database to avoid duplicating design and features) 
+- Save a list of search terms that users have typed
+- Get keywords from all opps user has saved 
+- Display opps that contain these keywords, but only those they haven't saved yet.
+- Maybe include this in the email.
+
+- arrow keys let you choose auto suggest
 
 Additional scraping
 - https://www.musicalchairs.info/marketing-and-sales/jobs - is this the kind of opps you want??
@@ -16,12 +28,6 @@ SAVE POINT BEFORE EDITING PAGE CODE TO QUERY LOOKUPTABLE: 5:50PM 12/23
 3d25abba-0d15-4ed8-9284-472c2d5ffb47
 cf6ed65f-cd66-4236-bf22-943784cd37d3
 
-CREATIVE CAPITAL IS BROKEN 
-import which website opportunity came from....
-what if you import data based on which website you took opp from???
-database doesn't count opps on first load? 
-mobile design for monthly email? 
-- fix artwork archive because all deadlines are December 31st....
 
 Validate that your application works with the new database service
 The migration automatically replaces plugin variable references in your services.

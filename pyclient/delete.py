@@ -7,6 +7,7 @@ headers = {
 }
 
 # resCloud = requests.delete('https://web-production-022b.up.railway.app/api/opportunities/delete/59/', headers=headers)
-res = requests.delete('http://127.0.0.1:8000/api/opportunities/delete/418/', headers=headers)
+res = requests.delete(
+    'http://127.0.0.1:8000/api/opportunities/delete/418/', headers=headers)
 
 print(res)
