@@ -41,7 +41,7 @@ def scrape():
         if prevMonthNum == '12':
             prevYear = datetime.strftime(today - timedelta(days=15), '%Y')
 
-        for day in range(19, 32):
+        for day in range(15, 32):
             urlVersion = f'https://creative-capital.org/{prevYear}/{prevMonthNum}/{day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'
             print(urlVersion)
             r = requests.get(
