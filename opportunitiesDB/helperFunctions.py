@@ -105,3 +105,7 @@ def addComposerKeywords(keywordList):
     composerKeywords = ['composer', 'composition', 'new music']
     keywordList.extend(composerKeywords)
     return keywordList
+
+
+def checkDescriptionContainsFee(description: str) -> bool:
+    return 'fee' in description.lower()

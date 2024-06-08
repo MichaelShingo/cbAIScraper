@@ -1,9 +1,13 @@
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
-import requests, environ, openai, json
-from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
+import requests
+import environ
+import openai
+import json
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDescriptionContainsFee
 from .models import ActiveOpps
 from reports.models import Reports
+
 
 def scrape():
     PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
@@ -31,8 +35,8 @@ def scrape():
         for entryTitle in entryTitles:
             if entryTitle.text == f'Opportunities in {curMonth} {curYear}':
                 url = entryTitle.attrs['href']
-            
-        #SCRAPING ---------------------------------------------------------
+
+        # SCRAPING ---------------------------------------------------------
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'html.parser')
         oppContainer = soup.select('#pico > p')
@@ -44,16 +48,16 @@ def scrape():
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
     errorMessage = 'None'
-    for i in range(3, len(oppContainer)): # starts from the 3rd <p> tag to skip headings.
+    # starts from the 3rd <p> tag to skip headings.
+    for i in range(3, len(oppContainer)):
         try:
             title = ''
-            deadline = '' #if none provided, use NONE
-            location = '' #if none found, use ONLINE
+            deadline = ''  # if none provided, use NONE
+            location = ''  # if none found, use ONLINE
             description = ''
             website = ''
             deadlineString = ''
-            
-            
+
             # OPEN AI SETUP
             env = environ.Env()
             environ.Env.read_env()
@@ -64,24 +68,27 @@ def scrape():
             response = openai.ChatCompletion.create(
                 model='gpt-3.5-turbo',
                 messages=[
-                    {'role': 'user', 'content': PROMPT + '###' + str(oppContainer[i])},
+                    {'role': 'user', 'content': PROMPT +
+                        '###' + str(oppContainer[i])},
                 ]
             )
 
-            completion_text = json.loads(str(response.choices[0])) # returns DICT
+            completion_text = json.loads(
+                str(response.choices[0]))  # returns DICT
             content = completion_text['message']['content']
             json_result = json.loads(content)
             location = json_result['location'] if json_result['location'] != 'None' else 'Online'
 
             description = json_result['description']
 
-            if description == 'Fee' or description.endswith('Fee') or description.startswith('Fee'):
+            if checkDescriptionContainsFee(description):
                 fee += 1
                 continue
             elif len(description) < 40:
                 continue
 
-            oppTypeList = findOppTypeTags(description.lower()) # Uses regular search function
+            # Uses regular search function
+            oppTypeList = findOppTypeTags(description.lower())
             location = json_result['location']
             for l in range(2):
                 location = formatLocation(location)
@@ -91,15 +98,16 @@ def scrape():
                 deadline += ' 23:59'
                 deadline = datetime.strptime(deadline, '%m/%d/%Y %H:%M')
             else:
-                deadline = datetime.strftime(datetime.today() + timedelta(days=30))
-            
+                deadline = datetime.strftime(
+                    datetime.today() + timedelta(days=30))
+
             deadlineDate = datetime.strftime(deadline, '%Y-%m-%d %H:%M:59Z')
             deadlineString = datetime.strftime(deadline, '%B %d, %Y')
 
             title = json_result['original_title']
             titleAI = json_result['aititle']
             titleAI = formatTitle(titleAI)
-            
+
             website = json_result['hyperlink']
 
             if ActiveOpps.objects.filter(title=title, deadline=deadlineDate).exists():
@@ -113,15 +121,15 @@ def scrape():
                 keywordsList = json_result['keywords'].split(',')
             composerKeywords = ['composer', 'composition', 'new music']
             keywordsList.extend(composerKeywords)
-            
+
             # CREATE A ACTIVEOPPS Model instance and save it to the database
             newModel = ActiveOpps(title=title, deadline=deadlineDate, titleAI=titleAI,
-                        location=location, description=description, link=website, deadlineString=deadlineString,
-                        typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='HyperAllergic')
+                                  location=location, description=description, link=website, deadlineString=deadlineString,
+                                  typeOfOpp=oppTypeList, approved=True, keywords=keywordsList, websiteName='HyperAllergic')
             newModel.save()
             successCount += 1
             print(f'Added | {title}')
-        
+
         except Exception as e:
             failCount += 1
             print('An entry failed to be added.', str(e))
@@ -143,5 +151,3 @@ def scrape():
     }
 
     return message
-
-    

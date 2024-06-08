@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import findOppTypeTags, addComposerKeywords, formatTitle, checkDuplicate, getWithScrapeOps, formatDjangoDateString
+from .helperFunctions import findOppTypeTags, addComposerKeywords, formatTitle, checkDuplicate, getWithScrapeOps, formatDjangoDateString, checkDescriptionContainsFee
 from .aiFunctions import getGPTResponse, getAILocation, getKeywordsList
 from . import promptText
 from reports.saveReportAndMessage import saveReportGenMessage
@@ -90,6 +90,9 @@ def scrape():
                 PROMPT + '###' + f'Title {title} | ' + str(innerText))
             location = getAILocation(json_result)
             description = json_result['description']
+            if checkDescriptionContainsFee(description):
+                fee += 1
+                continue
             oppTypeList = findOppTypeTags(innerText)
             titleAI = formatTitle(json_result['aititle'])
             keywordsList = getKeywordsList(json_result)

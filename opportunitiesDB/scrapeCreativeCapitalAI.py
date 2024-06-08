@@ -4,13 +4,13 @@ import requests
 import environ
 import openai
 import json
-from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDescriptionContainsFee
 from .models import ActiveOpps
 from reports.models import Reports
 
 
 def scrape():
-    PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things? 
+    PROMPT = '''In the text below, I will provide HTML containing information about an opportunity. Based the HTML, can you do these 6 things?
             1. Extract the description. If the description mentions an application fee or entry fee, write ONLY "Fee" in the description field. Do not write anything other than "Fee" in the description field.
             2. Extract the deadline date in the format MM/DD/YYYY. If there is no deadline listed, set the date to the last day of the current month.
             3. Extract the title of the opportunity and save it in the "original_title" field.
@@ -19,7 +19,8 @@ def scrape():
             5. Using less than 12 words, can you generate a title for this opportunity based on it's description and save it in the "aititle" field? The title should read like a professional job listing. Include the name of the organization or person who posted the opportunity if possible.
             6. Give me the location of the opportunity based on any words that suggest a place. If there is no location listed, try to find the location of the university, college, or organization in the description. Location should be in the format "city, full_state_name, country". If there is no state, leave it out. If you can't find a definite location, write "None". If the location contains a US state, write "United States" for country.
             Format the result as a JSON string like this:
-            {"original_title":"title","aititle":"title - organization_name","description":"description of the opportunity","deadline":"MM/DD/YYYY","hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, full_state_name, country"}
+            {"original_title":"title","aititle":"title - organization_name","description":"description of the opportunity","deadline":"MM/DD/YYYY",
+                "hyperlink":"url_to_website","keywords":"keyword1,keyword2,keyword3","location":"city, full_state_name, country"}
             '''
 
     # OPEN AI SETUP
@@ -31,7 +32,7 @@ def scrape():
 
     # GET CURRENT MONTH URL
     try:
-      # SCRAPING ---------------------------------------------------------
+      # SCRAPING ---------------------------------------------------------F
         today = datetime.today()
         curMonthStr = datetime.strftime(today, '%B')
         prevMonthNum = datetime.strftime(today - timedelta(days=15), '%m')
@@ -42,7 +43,9 @@ def scrape():
             prevYear = datetime.strftime(today - timedelta(days=15), '%Y')
 
         for day in range(15, 32):
-            urlVersion = f'https://creative-capital.org/{prevYear}/{prevMonthNum}/{day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'
+            urlVersion = f'''https://creative-capital.org/{prevYear}/{prevMonthNum}/{
+                day}/artist-opportunities-{curMonthStr}-and-{nextMonthStr}-{year}/'''
+
             print(urlVersion)
             r = requests.get(
                 url='https://proxy.scrapeops.io/v1/',
@@ -109,7 +112,7 @@ def scrape():
 
                 description = json_result['description']
 
-                if description == 'Fee' or description.endswith('Fee') or description.startswith('Fee'):
+                if checkDescriptionContainsFee(description):
                     fee += 1
                     continue
                 elif len(description) < 40:

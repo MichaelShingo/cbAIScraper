@@ -5,7 +5,7 @@ import environ
 import openai
 import json
 import csv
-from .helperFunctions import findOppTypeTags, formatLocation, formatTitle
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDescriptionContainsFee
 from .models import ActiveOpps
 from . import tagLists
 from reports.models import Reports
@@ -70,7 +70,8 @@ def scrape():
 
             descriptionList = []
             descriptionTags = oppSoup.select(
-                '.order-1')[1] if oppSoup.select('.order-1') else ''  # selects description box
+                # selects description box
+                '.order-1')[1] if oppSoup.select('.order-1') else ''
             for pageElement in descriptionTags.children:  # how to made one additional \n on <br>'s???
                 innerText = pageElement.get_text()
                 innerText = innerText.replace('\t', '')
@@ -129,7 +130,7 @@ def scrape():
             for l in range(2):
                 location = formatLocation(location)
 
-            if json_result['summary'] == 'Fee':
+            if checkDescriptionContainsFee(json_result['summary']):
                 fee += 1
                 continue
             elif json_result['summary'] != 'None':

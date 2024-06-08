@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import findOppTypeTags, formatTitle, checkDuplicate
+from .helperFunctions import findOppTypeTags, formatTitle, checkDuplicate, checkDescriptionContainsFee
 from .aiFunctions import getGPTResponse, getAILocation, getKeywordsList
 from . import promptText
 from reports.saveReportAndMessage import saveReportGenMessage
@@ -19,7 +19,8 @@ def scrape():
     WEBSITE_NAME = 'Artwork Archive'
 
     currentYear = datetime.now().year
-    PAGE_LINK = f'https://www.artworkarchive.com/call-for-entry/complete-guide-to-{currentYear}-artist-grants-opportunities?fee_filter=free&opportunity_search=&opportunity_type_filter%5B%5D=&page='
+    PAGE_LINK = f'https://www.artworkarchive.com/call-for-entry/complete-guide-to-{
+        currentYear}-artist-grants-opportunities?fee_filter=free&opportunity_search=&opportunity_type_filter%5B%5D=&page='
     errorMessage = 'None'
 
     # SCRAPING ---------------------------------------------------------
@@ -71,6 +72,9 @@ def scrape():
                 json_result = getGPTResponse(PROMPT + '###' + str(oppRow))
                 location = getAILocation(json_result)
                 description = json_result['description']
+                if checkDescriptionContainsFee(description):
+                    fee += 1
+                    continue
                 oppTypeList = findOppTypeTags(description)
                 titleAI = formatTitle(json_result['aititle'])
                 keywordsList = getKeywordsList(json_result)

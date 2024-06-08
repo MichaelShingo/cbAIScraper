@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import requests
 import environ
 import json
-from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDuplicate, formatDatabaseDateString, formatDjangoDateString
+from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDuplicate, formatDatabaseDateString, formatDjangoDateString, checkDescriptionContainsFee
 from .models import ActiveOpps
 from reports.models import Reports
 from selenium import webdriver
@@ -119,6 +119,11 @@ def scrape():
             json_result = getGPTResponse(
                 f'{PROMPT} ### Title and Organization: {title} - {opp["organization"]} ### {text[:4000]}')
             description = json_result['description']
+
+            if checkDescriptionContainsFee(description):
+                fee += 1
+                continue
+
             if description.lower() == 'none':
                 print(title, 'There is a problem with the page.')
                 failCount += 1

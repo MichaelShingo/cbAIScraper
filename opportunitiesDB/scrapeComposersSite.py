@@ -5,7 +5,7 @@ import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from .models import ActiveOpps
-from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle, addComposerKeywords
+from .helperFunctions import tagToStr, findOppTypeTags, formatLocation, formatTitle, addComposerKeywords, checkDescriptionContainsFee
 from reports.models import Reports
 
 
@@ -118,7 +118,7 @@ def scrape():
                 # Uses regular search function
                 oppTypeList = findOppTypeTags(description.lower())
 
-                if json_result['summary'] == 'Fee' or json_result['summary'].endswith('Fee') or json_result['summary'].startswith('Fee'):
+                if checkDescriptionContainsFee(json_result['summary']):
                     fee += 1
                     continue
                 elif json_result['summary'] != 'None':
