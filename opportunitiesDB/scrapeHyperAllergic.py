@@ -7,6 +7,7 @@ import json
 from .helperFunctions import findOppTypeTags, formatLocation, formatTitle, checkDescriptionContainsFee
 from .models import ActiveOpps
 from reports.models import Reports
+from .aiFunctions import getGPTResponse
 
 
 def scrape():
@@ -37,9 +38,12 @@ def scrape():
                 url = entryTitle.attrs['href']
 
         # SCRAPING ---------------------------------------------------------
+        print(url)
         r = requests.get(url)
         soup = BeautifulSoup(r.content, 'html.parser')
-        oppContainer = soup.select('#pico > p')
+        overallContainer = soup.select('.entry.content')
+        print(overallContainer)
+        oppContainer = soup.select('.entry-content > p')
     except Exception as e:
         return {'website': 'HyperAllergic',
                 'details': str(e),
@@ -48,6 +52,8 @@ def scrape():
 
     failCount, successCount, sameEntryCount, fee = 0, 0, 0, 0
     errorMessage = 'None'
+    for opp in oppContainer:
+        print(opp)
     # starts from the 3rd <p> tag to skip headings.
     for i in range(3, len(oppContainer)):
         try:
@@ -58,25 +64,8 @@ def scrape():
             website = ''
             deadlineString = ''
 
-            # OPEN AI SETUP
-            env = environ.Env()
-            environ.Env.read_env()
-            API_KEY = env('AI_KEY')
-            openai.api_key = API_KEY
-
-            # LOCATION, KEYWORDS, OPPTYPE - send description and title to GPT
-            response = openai.ChatCompletion.create(
-                model='gpt-3.5-turbo',
-                messages=[
-                    {'role': 'user', 'content': PROMPT +
-                        '###' + str(oppContainer[i])},
-                ]
-            )
-
-            completion_text = json.loads(
-                str(response.choices[0]))  # returns DICT
-            content = completion_text['message']['content']
-            json_result = json.loads(content)
+            json_result = getGPTResponse(PROMPT +
+                                         '###' + str(oppContainer[i]))
             location = json_result['location'] if json_result['location'] != 'None' else 'Online'
 
             description = json_result['description']
@@ -105,6 +94,7 @@ def scrape():
             deadlineString = datetime.strftime(deadline, '%B %d, %Y')
 
             title = json_result['original_title']
+            print(title)
             titleAI = json_result['aititle']
             titleAI = formatTitle(titleAI)
 
