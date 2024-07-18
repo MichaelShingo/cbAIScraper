@@ -19,8 +19,8 @@ def scrape():
     WEBSITE_NAME = 'Artwork Archive'
 
     currentYear = datetime.now().year
-    PAGE_LINK = f'https://www.artworkarchive.com/call-for-entry/complete-guide-to-{
-        currentYear}-artist-grants-opportunities?fee_filter=free&opportunity_search=&opportunity_type_filter%5B%5D=&page='
+    PAGE_LINK = f'''https://www.artworkarchive.com/call-for-entry/complete-guide-to-{
+        currentYear}-artist-grants-opportunities?fee_filter=free&opportunity_search=&opportunity_type_filter%5B%5D=&page='''
     errorMessage = 'None'
 
     # SCRAPING ---------------------------------------------------------
