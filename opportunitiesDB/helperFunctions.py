@@ -109,9 +109,13 @@ def addComposerKeywords(keywordList):
 
 def checkDescriptionContainsFee(description: str) -> bool:
     descriptionLower = description.lower()
-    noFee = ['no fee', 'without fee']
-    for term in noFee:
+    feeTerms = ['tuition', 'entry fee', 'application fee', 'entrance fee']
+    noFeeTerms = ['no ' + term for term in feeTerms]
+
+    for term in noFeeTerms:
         if term in description:
             return False
-    if 'fee' in descriptionLower:
-        return True
+
+    for term in feeTerms:
+        if term in descriptionLower:
+            return True

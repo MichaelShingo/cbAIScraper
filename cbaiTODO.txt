@@ -1,6 +1,12 @@
 CBYellow: #ffde59
 customizable loading gif source: https://loading.io
 
+- map page footer too high on mobile
+- no logged in user on iphone mobile, after searching footer problem??? 
+- my opportunities page on mobile? 
+
+
+
 - Disable submit button while submitting to prevent multiple. 
 - add num of people who applied to opp 
 - map detail container should be scrollable...but wix does not support this
